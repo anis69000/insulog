@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InsuLog — Dose Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+ *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A;display:flex;min-height:100vh;}
+ .sidebar{width:240px;min-height:100vh;background:#fff;border-right:1px solid #E2E8F0;display:flex;flex-direction:column;padding:24px 16px;position:fixed;top:0;left:0;bottom:0;z-index:50;}
+ .sidebar-logo{padding:4px 4px 20px;border-bottom:1px solid #F1F5F9;margin-bottom:16px;}
+ .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:#64748B;font-size:14px;font-weight:500;transition:all 0.15s;margin-bottom:2px;}
+ .nav-item:hover{background:#F8FAFC;color:#0F172A;}
+ .nav-item.active{background:#2563EB;color:#fff;font-weight:600;box-shadow:0 4px 16px rgba(37,99,235,0.40);}
+ .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+ .sidebar-footer{margin-top:auto;padding:12px;border-radius:8px;background:#F8FAFC;border:1px solid #E2E8F0;}
+ .sidebar-footer p{font-size:11px;color:#94A3B8;}
+ .model-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;margin-top:4px;}
+ .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+ .dot-green{background:#10B981;box-shadow:0 0 0 2px #D1FAE5;}
+ .dot-yellow{background:#F59E0B;box-shadow:0 0 0 2px #FEF3C7;}
+ .main{margin-left:240px;flex:1;padding:32px;display:flex;flex-direction:column;align-items:center;}
+ .page-header{margin-bottom:24px;}
+ .page-header h2{font-size:24px;font-weight:700;color:#0F172A;}
+ .page-header p{font-size:14px;color:#64748B;margin-top:4px;}
+ .card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px;margin-bottom:0;}
+ .card-title{font-size:13px;font-weight:600;color:#0F172A;margin-bottom:14px;}
+ .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+ .col{display:flex;flex-direction:column;gap:16px;}
+ .field{display:flex;flex-direction:column;gap:5px;}
+ .field label{font-size:12px;font-weight:500;color:#64748B;}
+ .field input,.field select{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;color:#0F172A;padding:9px 12px;font-size:14px;font-family:inherit;outline:none;width:100%;transition:border-color 0.15s;}
+ .field input:focus,.field select:focus{border-color:#3B82F6;background:#fff;}
+ .toggle-group{display:flex;gap:6px;}
+ .toggle-btn{flex:1;padding:8px 10px;border-radius:8px;border:1px solid #E2E8F0;background:#F8FAFC;color:#64748B;font-weight:500;font-size:13px;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+ .toggle-btn:hover{border-color:#CBD5E1;background:#fff;}
+ .toggle-btn.active-blue{border-color:#BFDBFE;background:#EFF6FF;color:#2563EB;font-weight:600;}
+ .toggle-btn.active-green{border-color:#A7F3D0;background:#ECFDF5;color:#059669;font-weight:600;}
+ .toggle-btn.active-yellow{border-color:#FDE68A;background:#FFFBEB;color:#D97706;font-weight:600;}
+ .cgm-card{background:#ECFDF5;border:1px solid #A7F3D0;border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+ .cgm-card.yellow{background:#FFFBEB;border-color:#FDE68A;}
+ .cgm-card.red{background:#FEF2F2;border-color:#FECACA;}
+ .cgm-val{font-size:48px;font-weight:700;line-height:1;color:#059669;}
+ .cgm-card.yellow .cgm-val{color:#D97706;}
+ .cgm-card.red .cgm-val{color:#DC2626;}
+ .cgm-sub{font-size:12px;color:#6B7280;margin-top:4px;}
+ .cgm-badge{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#059669;background:#D1FAE5;padding:5px 12px;border-radius:99px;}
+ .cgm-card.yellow .cgm-badge{color:#D97706;background:#FEF3C7;}
+ .cgm-card.red .cgm-badge{color:#DC2626;background:#FEE2E2;}
+ .section-label{font-size:11px;font-weight:600;color:#94A3B8;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;}
+ .btn-calc{width:100%;padding:13px;background:#1E3A8A;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.15s;}
+ .btn-calc:hover{background:#1e40af;}
+ .btn-calc:disabled{background:#BFDBFE;color:#93C5FD;cursor:not-allowed;opacity:1;}
+ .btn-calc.danger{background:#DC2626;}
+ #resultat{display:none;}
+ .dose-big{font-size:60px;font-weight:700;line-height:1;}
+ .dose-unit-lbl{font-size:16px;color:#94A3B8;}
+ .src-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:600;margin-top:6px;}
+ .src-ml{background:#F3E8FF;color:#7C3AED;}
+ .src-formula{background:#EFF6FF;color:#2563EB;}
+ .decompo-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;}
+ .decompo-row:last-child{border-bottom:none;font-weight:700;}
+ .decompo-label{color:#64748B;}
+ .btn-inject{flex:1;padding:13px;border-radius:10px;border:none;background:#059669;color:#fff;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;transition:background 0.15s;}
+ .btn-inject:hover{background:#047857;}
+ .btn-decline{flex:1;padding:13px;border-radius:10px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+ .btn-decline:hover{background:#FEE2E2;}
+ .alerte{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;font-size:13px;color:#92400E;margin-top:10px;}
+ .alerte.danger{background:#FEF2F2;border-color:#FECACA;color:#991B1B;}
+ textarea{width:100%;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;color:#0F172A;padding:10px 12px;font-size:13px;font-family:inherit;outline:none;resize:vertical;min-height:80px;line-height:1.5;}
+ textarea:focus{border-color:#3B82F6;background:#fff;}
+ .confirm-card{border-radius:12px;padding:28px;text-align:center;}
+ .confirm-card.success{background:#ECFDF5;border:1px solid #A7F3D0;}
+ .confirm-card.declined{background:#FEF2F2;border:1px solid #FECACA;}
+ .confirm-link{display:inline-block;padding:9px 20px;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none;}
+
+ .lang-toggle{display:flex;align-items:center;gap:6px;margin-top:10px;}
+ .lang-btn{flex:1;padding:5px;border-radius:6px;border:1px solid #E2E8F0;background:#fff;color:#64748B;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+ .lang-btn.active{background:#2563EB;color:#fff;border-color:#2563EB;}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+ <div class="sidebar-logo">
+ <div style="display:flex;align-items:center;gap:10px;">
+ <div style="width:36px;height:36px;background:#2563EB;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+ <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+ </div>
+ <div>
+ <div style="font-size:18px;font-weight:700;color:#0F172A;">InsuLog</div>
+ <div style="font-size:11px;color:#94A3B8;" data-i18n="app-sub">Gestion diabète de type 1</div>
+ </div>
+ </div>
+ </div>
+ <nav>
+    <a href="/" class="nav-item active"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><span data-i18n="nav-dose">Calculateur de dose</span></a>
+    <a href="/dashboard" class="nav-item"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg><span data-i18n="nav-dashboard">Tableau de bord</span></a>
+    <a href="/historique" class="nav-item"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span data-i18n="nav-history">Historique injections</span></a>
+    <a href="/profil" class="nav-item"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg><span data-i18n="nav-profile">Profil patient</span></a>
+  </nav>
+ <div class="sidebar-footer">
+       <a href="/logout" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;color:#EF4444;font-size:13px;font-weight:600;text-decoration:none;background:#FEF2F2;border:1px solid #FECACA;margin-bottom:10px;">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        <span data-i18n="logout">Déconnexion</span>
+      </a>
+      <div class="lang-toggle">
+ <button class="lang-btn" id="btn-fr" onclick="setLang('fr')">FR</button>
+ <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+ </div>
+ <p>Model Status</p>
+ {% if modele_actif %}
+ <div class="model-badge" style="color:#059669"><span class="dot dot-green"></span> ML Active v{{ version }}</div>
+ {% else %}
+ <div class="model-badge" style="color:#D97706"><span class="dot dot-yellow"></span> Clinical Formula</div>
+ {% endif %}
+ <p style="margin-top:8px;">Type 1 Diabetes Management</p>
+ </div>
+</aside>
+
+<main class="main">
+ <div class="page-header" style="width:100%;max-width:680px;">
+ <h2 data-i18n="page-title">Calculateur de dose</h2>
+ <p data-i18n="page-sub">Calculez votre dose d'insuline selon votre glycémie et votre repas</p>
+ </div>
+
+ <div class="cgm-card" id="cgm-card" style="width:100%;max-width:680px;">
+ <div>
+ <div style="font-size:12px;font-weight:600;color:#64748B;margin-bottom:8px;" data-i18n="cgm-section">Glycémie actuelle</div>
+ <div class="cgm-val" id="cgm-val">9.4 ↗</div>
+ <div class="cgm-sub" id="cgm-label">mmol/L · Élevée</div>
+ <div class="cgm-sub" id="cgm-mg">169 mg/dL</div>
+ </div>
+ <div class="cgm-badge" id="cgm-badge">
+ <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+ CGM Active
+ </div>
+ </div>
+
+ <div style="width:100%;max-width:680px;">
+
+ <div class="card">
+ <div class="card-title" data-i18n="glucose-input">Saisie glycémie</div>
+ <div class="toggle-group" style="margin-bottom:14px;">
+ <button class="toggle-btn active-blue" onclick="setMode('cgm',this)" data-i18n="cgm-simulated">CGM Simulé</button>
+ <button class="toggle-btn" onclick="setMode('manuel',this)" data-i18n="manual-entry">Saisie manuelle</button>
+ </div>
+ <div id="cgm-panel"><p style="font-size:13px;color:#94A3B8;" data-i18n="cgm-live">Lecture CGM en direct ci-dessus.</p></div>
+ <div id="manuel-panel" style="display:none;">
+ <div class="field"><label data-i18n="bg-label">Glycémie (mmol/L)</label><input type="number" id="bg-manuel" value="10.5" min="2" max="30" step="0.1"></div>
+ </div>
+ </div>
+
+ <div class="card">
+ <div class="card-title" data-i18n="meal-title">Repas &amp; Activité</div>
+ <div class="toggle-group" style="margin-bottom:14px;">
+ <button class="toggle-btn active-green" onclick="setRepas(true,this)" data-i18n="with-meal">Avec repas</button>
+ <button class="toggle-btn" onclick="setRepas(false,this)" data-i18n="correction-only">Correction seule</button>
+ </div>
+ <div id="repas-panel">
+ <div class="grid-2" style="gap:10px;margin-bottom:12px;">
+ <div class="field"><label data-i18n="carbs-label">Glucides (g)</label><input type="number" id="carbs" placeholder="Entrez les glucides" data-i18n-ph="carbs-ph" value="" min="0" max="200"></div>
+ <div class="field"><label data-i18n="meal-type-label">Type de repas</label>
+ <select id="meal-type">
+ <option value="standard" data-fr="Standard" data-en="Standard">Standard</option>
+ <option value="low_gi" data-fr="IG bas (légumes, lentilles)" data-en="Low GI (vegetables, lentils)">IG bas (légumes, lentilles)</option>
+ <option value="high_gi" data-fr="IG élevé (pain, riz blanc)" data-en="High GI (bread, white rice)">IG élevé (pain, riz blanc)</option>
+ <option value="high_fat" data-fr="Riche en gras (pizza, burger)" data-en="High Fat (pizza, burger)">Riche en gras (pizza, burger)</option>
+ <option value="high_protein" data-fr="Riche en protéines" data-en="High Protein">Riche en protéines</option>
+ </select>
+ </div>
+ </div>
+ </div>
+ <div class="field" style="margin-bottom:14px;">
+ <label data-i18n="iob-label">Insuline active (UI)</label>
+ <input type="number" id="iob" placeholder="Entrez IOB" data-i18n-ph="iob-ph" value="" min="0" max="15" step="0.5">
+ </div>
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+ <span style="font-size:13px;font-weight:600;" data-i18n="exercise-title">Ajustement exercice</span>
+ <label style="display:flex;align-items:center;cursor:pointer;position:relative;">
+ <input type="checkbox" id="ex-toggle" onchange="toggleExercise(this.checked)" style="width:36px;height:20px;opacity:0;position:absolute;cursor:pointer;z-index:1;">
+ <div id="ex-track" style="width:36px;height:20px;background:#E2E8F0;border-radius:99px;transition:background 0.2s;"></div>
+ <div id="ex-thumb" style="position:absolute;top:3px;left:3px;width:14px;height:14px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left 0.2s;pointer-events:none;"></div>
+ </label>
+ </div>
+ <div id="ex-panel" style="display:none;">
+ <div class="toggle-group" style="margin-bottom:10px;">
+ <button class="toggle-btn active-yellow" onclick="setEx(0,this)" data-i18n="ex-none">Aucun</button>
+ <button class="toggle-btn" onclick="setEx(1,this)" data-i18n="ex-light">Léger</button>
+ <button class="toggle-btn" onclick="setEx(2,this)" data-i18n="ex-moderate">Modéré</button>
+ <button class="toggle-btn" onclick="setEx(3,this)" data-i18n="ex-intense">Intense</button>
+ </div>
+ <div class="field"><label data-i18n="ex-hours-label">Heures depuis exercice</label><input type="number" id="ex-hours" value="0" min="0" max="24" step="0.5"></div>
+ </div>
+ </div>
+
+  <!-- Hidden profile inputs -->
+  <div style="display:none;">
+    <input type="number" id="tdd" value="38"><input type="number" id="target" value="6.0">
+    <input type="number" id="isf" value="2.6"><input type="number" id="icr" value="12">
+    <input type="number" id="age" value="28"><input type="number" id="weight" value="68">
+    <input type="number" id="ex-hours" value="0">
+    <span id="btn-f"></span><span id="btn-m"></span><span id="btn-foll"></span><span id="btn-lut"></span>
+    <div id="cycle-panel"></div>
+  </div>
+
+  <button style="width:100%;max-width:680px;margin-top:24px;" class="btn-calc" id="btn-calc" onclick="calculer()" data-i18n="btn-calc" disabled>Calculer la dose</button>
+
+ <div id="resultat" style="width:100%;max-width:680px;">
+ <div class="card" id="result-card">
+ <div class="card-title" data-i18n="result-title">Dose recommandée</div>
+ <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:4px;">
+ <div class="dose-big" id="dose-val">—</div>
+ <div><div class="dose-unit-lbl" data-i18n="units">unités</div><div id="source-badge"></div></div>
+ </div>
+ </div>
+
+ <div class="card" style="margin-top:12px;">
+ <div class="card-title" data-i18n="breakdown-title">Décomposition</div>
+ <div class="decompo-row"><span class="decompo-label" data-i18n="prandial">Bolus prandial</span><span id="d-prandial" style="color:#059669;font-weight:600;">—</span></div>
+ <div class="decompo-row"><span class="decompo-label" data-i18n="correction">Correction glycémie</span><span id="d-correction" style="color:#2563EB;font-weight:600;">—</span></div>
+ <div class="decompo-row"><span class="decompo-label" data-i18n="iob-ded">IOB déduit</span><span id="d-iob" style="color:#D97706;font-weight:600;">—</span></div>
+ <div class="decompo-row"><span class="decompo-label" data-i18n="total">Total</span><span id="d-total" style="font-weight:700;">—</span></div>
+ </div>
+
+ <div id="alertes-container"></div>
+
+ <div id="action-buttons" style="display:none;margin-top:12px;">
+ <div style="display:flex;gap:10px;">
+ <button class="btn-decline" onclick="afficherRefus()" data-i18n="decline-btn">Refuser</button>
+ <button class="btn-inject" onclick="confirmerInjection()" data-i18n="inject-btn">Injecter la dose</button>
+ </div>
+ <div id="panel-refus" style="display:none;margin-top:12px;">
+ <div class="card" style="border-color:#FECACA;">
+ <div class="section-label" style="color:#DC2626;" data-i18n="decline-reason">Raison du refus (optionnel)</div>
+ <textarea id="commentaire-refus" placeholder="Why are you not injecting this dose?&#10;e.g. Lighter meal than expected, exercise planned..."></textarea>
+ <button onclick="confirmerRefus()" style="width:100%;margin-top:10px;padding:11px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;color:#DC2626;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;" data-i18n="confirm-decline">Confirmer le refus</button>
+ </div>
+ </div>
+ </div>
+
+ <div id="confirm-injection" style="display:none;margin-top:12px;">
+ <div class="confirm-card success">
+ <div style="font-size:36px;margin-bottom:10px;"></div>
+ <div style="font-size:17px;font-weight:700;color:#065F46;margin-bottom:6px;" data-i18n="injection-ok-title">Injection enregistrée !</div>
+ <div style="font-size:13px;color:#64748B;margin-bottom:14px;" data-i18n="injection-ok-sub">Pensez à noter votre glycémie dans 4h.</div>
+ <a href="/historique" class="confirm-link" style="background:#D1FAE5;color:#065F46;" data-i18n="view-history">Voir l'historique →</a>
+ </div>
+ </div>
+
+ <div id="confirm-refus" style="display:none;margin-top:12px;">
+ <div class="confirm-card declined">
+ <div style="font-size:36px;margin-bottom:10px;"></div>
+ <div style="font-size:17px;font-weight:700;color:#991B1B;margin-bottom:6px;" data-i18n="decline-ok-title">Refus enregistré</div>
+ <div style="font-size:13px;color:#64748B;margin-bottom:14px;" data-i18n="decline-ok-sub">Votre décision a été sauvegardée.</div>
+ <a href="/historique" class="confirm-link" style="background:#FEE2E2;color:#991B1B;">View History →</a>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+</main>
+
+<script>
+ let mode="cgm",hasMeal=true,sex="F",luteal=true,exInt=0;
+ let cgmBg=9.4,cgmTrend=0.03;
+ let dernierResultat=null,dernierPayload=null;
+
+ function bgClass(v){return v<4?"red":v<=7?"":"yellow";}
+ function bgLabel(v){return v<4?t_("bg-hypo","Hypoglycémie"):v<=7?t_("bg-ok","Dans la cible"):v<=10?t_("bg-high","Élevée"):t_("bg-very-high","Haute");}
+ function mmToMg(v){return Math.round(v*18.02);}
+
+ function updateCGM(){
+ const noise=(Math.random()-.48)*.3,mr=(9.0-cgmBg)*.04;
+ cgmTrend=+(noise+mr).toFixed(2);
+ cgmBg=+Math.max(3.5,Math.min(20,cgmBg+noise+mr)).toFixed(1);
+ const arrow=cgmTrend>0.06?"↑↑":cgmTrend>0.02?"↑":cgmTrend<-0.06?"↓↓":cgmTrend<-0.02?"↓":"→";
+ const cls=bgClass(cgmBg);
+ document.getElementById("cgm-val").textContent=cgmBg+" "+arrow;
+ document.getElementById("cgm-label").textContent="mmol/L · "+bgLabel(cgmBg);
+ document.getElementById("cgm-mg").textContent=mmToMg(cgmBg)+" mg/dL";
+ document.getElementById("cgm-card").className="cgm-card"+(cls?" "+cls:"");
+ document.getElementById("cgm-badge").className="cgm-badge"+(cls?" "+cls:"");
+ const btn=document.getElementById("btn-calc");
+ if(cgmBg<4&&mode==="cgm"){btn.textContent=" Hypoglycemia — No Injection";btn.classList.add("danger");}
+ else{btn.textContent="Calculate Dose";btn.classList.remove("danger");}
+ }
+ setInterval(updateCGM,2500);
+
+ function setMode(m,el){mode=m;document.getElementById("cgm-panel").style.display=m==="cgm"?"block":"none";document.getElementById("manuel-panel").style.display=m==="manuel"?"block":"none";el.parentElement.querySelectorAll(".toggle-btn").forEach(b=>b.classList.remove("active-blue"));el.classList.add("active-blue");}
+ function setRepas(v,el){hasMeal=v;setTimeout(validerFormulaire,0);document.getElementById("repas-panel").style.display=v?"block":"none";el.parentElement.querySelectorAll(".toggle-btn").forEach(b=>{b.classList.remove("active-green","active-blue");});el.classList.add(v?"active-green":"active-blue");}
+ function setSex(s,el){sex=s;document.getElementById("cycle-panel").style.display=s==="F"?"block":"none";["btn-f","btn-m"].forEach(id=>document.getElementById(id).classList.remove("active-blue"));el.classList.add("active-blue");}
+ function setLuteal(v,el){luteal=v;["btn-foll","btn-lut"].forEach(id=>document.getElementById(id).classList.remove("active-blue"));el.classList.add("active-blue");}
+ function setEx(v,el){exInt=v;el.parentElement.querySelectorAll(".toggle-btn").forEach(b=>b.classList.remove("active-yellow"));el.classList.add("active-yellow");}
+ function toggleExercise(on){document.getElementById("ex-panel").style.display=on?"block":"none";document.getElementById("ex-track").style.background=on?"#3B82F6":"#E2E8F0";document.getElementById("ex-thumb").style.left=on?"19px":"3px";if(!on)exInt=0;}
+
+ async function calculer(){
+ const bg=mode==="cgm"?cgmBg:parseFloat(document.getElementById("bg-manuel").value);
+ const iob=parseFloat(document.getElementById("iob").value||0);
+ const carbs=hasMeal?parseFloat(document.getElementById("carbs").value||0):0;
+ dernierPayload={bg,carbs,iob};
+ const payload={bg,trend:cgmTrend,target:parseFloat(document.getElementById("target").value),carbs,icr:parseFloat(document.getElementById("icr").value),isf:parseFloat(document.getElementById("isf").value),tdd:parseFloat(document.getElementById("tdd").value),iob,age:parseInt(document.getElementById("age").value),weight:parseFloat(document.getElementById("weight").value),ex_intensity:exInt,ex_hours:parseFloat(document.getElementById("ex-hours").value||0),meal_type:hasMeal?document.getElementById("meal-type").value:"none",hour:new Date().getHours(),sex,luteal};
+ const btn=document.getElementById("btn-calc");
+ btn.textContent="Calculating…";btn.disabled=true;
+ try{const resp=await fetch("/calculer",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});const data=await resp.json();afficherResultat(data,iob);}
+ catch(e){alert("Connection error.");}
+ finally{btn.textContent="Recalculate";btn.disabled=false;}
+ }
+
+ function afficherResultat(data,iob){
+ dernierResultat=data;
+ ["resultat","action-buttons"].forEach(id=>document.getElementById(id).style.display="block");
+ ["panel-refus","confirm-injection","confirm-refus"].forEach(id=>document.getElementById(id).style.display="none");
+ document.getElementById("resultat").scrollIntoView({behavior:"smooth"});
+ document.getElementById("dose-val").textContent=data.dose;
+ document.getElementById("d-prandial").textContent="+"+data.prandial+" U";
+ document.getElementById("d-correction").textContent=(data.correction>=0?"+":"")+data.correction+" U";
+ document.getElementById("d-iob").textContent="−"+iob+" U";
+ document.getElementById("d-total").textContent=data.dose+" U";
+ document.getElementById("source-badge").innerHTML=data.source==="ml"?'<span class="src-badge src-ml">🤖 AI Model</span>':'<span class="src-badge src-formula"> Clinical Formula</span>';
+ const ac=document.getElementById("alertes-container");ac.innerHTML="";
+ if(data.bloque)ac.innerHTML='<div class="alerte danger"> Hypoglycemia — No injection. Take 15g fast carbs.</div>';
+ (data.avertissements||[]).forEach(a=>{ac.innerHTML+=`<div class="alerte">${a}</div>`;});
+ }
+
+ function afficherRefus(){document.getElementById("panel-refus").style.display="block";document.getElementById("panel-refus").scrollIntoView({behavior:"smooth"});}
+
+ async function confirmerInjection(){
+ const bg=mode==="cgm"?cgmBg:parseFloat(document.getElementById("bg-manuel").value);
+ await fetch("/injection/sauvegarder",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({dose:dernierResultat?.dose||0,bg,carbs:dernierPayload?.carbs||0,iob:dernierPayload?.iob||0,source:dernierResultat?.source||"formule",statut:"injectee",commentaire:""})});
+ document.getElementById("action-buttons").style.display="none";
+ document.getElementById("confirm-injection").style.display="block";
+ document.getElementById("confirm-injection").scrollIntoView({behavior:"smooth"});
+ }
+
+ async function confirmerRefus(){
+ const commentaire=document.getElementById("commentaire-refus").value;
+ const bg=mode==="cgm"?cgmBg:parseFloat(document.getElementById("bg-manuel").value);
+ await fetch("/injection/sauvegarder",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({dose:0,bg,carbs:dernierPayload?.carbs||0,iob:dernierPayload?.iob||0,source:dernierResultat?.source||"formule",statut:"refusee",commentaire})});
+ document.getElementById("action-buttons").style.display="none";
+ document.getElementById("confirm-refus").style.display="block";
+ document.getElementById("confirm-refus").scrollIntoView({behavior:"smooth"});
+ }
+
+ // i18n 
+ const TRANSLATIONS = {
+ fr: {
+ "page-title":"Calculateur de dose","page-sub":"Calculez votre dose d'insuline selon votre glycémie et votre repas",
+ "cgm-section":"Glycémie actuelle","cgm-active":"CGM Actif","glucose-input":"Saisie glycémie",
+ "cgm-simulated":"CGM Simulé","manual-entry":"Saisie manuelle","bg-label":"Glycémie (mmol/L)",
+ "cgm-live":"Lecture CGM en direct ci-dessus.","meal-title":"Repas & Activité",
+ "with-meal":"Avec repas","correction-only":"Correction seule","carbs-label":"Glucides (g)",
+ "carbs-ph":"Entrez les glucides","meal-type-label":"Type de repas","iob-label":"Insuline active (UI)",
+ "iob-ph":"Entrez IOB","exercise-title":"Ajustement exercice","ex-none":"Aucun","ex-light":"Léger",
+ "ex-moderate":"Modéré","ex-intense":"Intense","ex-hours-label":"Heures depuis exercice",
+ "params-title":"Paramètres patient","tdd-label":"TDD (UI/jour)","target-label":"Cible BG (mmol/L)",
+ "isf-label":"ISF (mmol/L/UI)","icr-label":"ICR (g/UI)","age-label":"Âge","weight-label":"Poids (kg)",
+ "female":"Femme","male":"Homme","cycle-label":"Phase du cycle",
+ "follicular":"Folliculaire (j1–13)","luteal":"Lutéale (j14–28)",
+ "btn-calc":"Calculer la dose","recalculate":"Recalculer","calculating":"Calcul en cours…",
+ "result-title":"Dose recommandée","units":"unités","breakdown-title":"Décomposition",
+ "prandial":"Bolus prandial","correction":"Correction glycémie","iob-ded":"IOB déduit","total":"Total",
+ "badge-ml":"Modèle IA","badge-formula":"Formule clinique",
+ "decline-btn":"Refuser","inject-btn":"Injecter la dose",
+ "decline-reason":"Raison du refus (optionnel)",
+ "decline-ph":"Pourquoi refusez-vous cette dose ?\nEx: Repas plus léger, activité prévue...",
+ "confirm-decline":"Confirmer le refus","injection-ok-title":"Injection enregistrée !",
+ "injection-ok-sub":"Pensez à noter votre glycémie dans 4h.","view-history":"Voir l'historique →",
+ "decline-ok-title":"Refus enregistré","decline-ok-sub":"Votre décision a été sauvegardée.",
+ "hypo-warn":"Hypoglycémie — Pas d'injection. Prenez 15g de glucides rapides.",
+ "hypo-btn":"Hypoglycémie — Pas d'injection","bg-hypo":"Hypoglycémie","bg-ok":"Dans la cible","bg-high":"Élevée","bg-very-high":"Haute",
+ "logout":"Déconnexion","nav-dose":"Calculateur de dose","nav-dashboard":"Tableau de bord",
+ "nav-history":"Historique injections","nav-profile":"Profil patient",
+ "model-status":"Statut modèle","app-sub":"Gestion diabète de type 1",
+ },
+ en: {
+ "page-title":"Dose Calculator","page-sub":"Calculate insulin dose based on current glucose and meal",
+ "cgm-section":"Current Glucose","cgm-active":"CGM Active","glucose-input":"Glucose Input",
+ "cgm-simulated":"CGM Simulated","manual-entry":"Manual Entry","bg-label":"Blood Glucose (mmol/L)",
+ "cgm-live":"Using live CGM reading above.","meal-title":"Meal & Activity Details",
+ "with-meal":"With Meal","correction-only":"Correction Only","carbs-label":"Carbohydrates (g)",
+ "carbs-ph":"Enter carbs","meal-type-label":"Meal Type","iob-label":"Insulin on Board (units)",
+ "iob-ph":"Enter IOB","exercise-title":"Exercise Adjustment","ex-none":"None","ex-light":"Light",
+ "ex-moderate":"Moderate","ex-intense":"Intense","ex-hours-label":"Hours since exercise",
+ "params-title":"Patient Parameters","tdd-label":"TDD (units/day)","target-label":"Target BG (mmol/L)",
+ "isf-label":"ISF (mmol/L/U)","icr-label":"ICR (g/U)","age-label":"Age","weight-label":"Weight (kg)",
+ "female":"Female","male":"Male","cycle-label":"Menstrual Cycle Phase",
+ "follicular":"Follicular (days 1–13)","luteal":"Luteal (days 14–28)",
+ "btn-calc":"Calculate Dose","recalculate":"Recalculate","calculating":"Calculating…",
+ "result-title":"Recommended Dose","units":"units","breakdown-title":"Dose Breakdown",
+ "prandial":"Prandial bolus","correction":"Glucose correction","iob-ded":"IOB deducted","total":"Total",
+ "badge-ml":"AI Model","badge-formula":"Clinical Formula",
+ "decline-btn":"Decline","inject-btn":"Inject Dose",
+ "decline-reason":"Reason for Declining (optional)",
+ "decline-ph":"Why are you not injecting this dose?\ne.g. Lighter meal than expected...",
+ "confirm-decline":"Confirm Decline","injection-ok-title":"Injection Recorded!",
+ "injection-ok-sub":"Remember to log your glucose in 4 hours.","view-history":"View History →",
+ "decline-ok-title":"Decline Recorded","decline-ok-sub":"Your decision has been saved.",
+ "hypo-warn":"Hypoglycemia — No injection. Take 15g fast carbs.",
+ "hypo-btn":"Hypoglycemia — No Injection","bg-hypo":"Hypoglycemia","bg-ok":"In Range","bg-high":"Elevated","bg-very-high":"High",
+ "logout":"Sign Out","nav-dose":"Dose Calculator","nav-dashboard":"Dashboard",
+ "nav-history":"Injection History","nav-profile":"Patient Profile",
+ "model-status":"Model Status","app-sub":"Type 1 Diabetes Management",
+ }
+ };
+
+ let currentLang = localStorage.getItem('insulog-lang') || 'fr';
+
+ function applyLang(lang){
+ currentLang = lang;
+ localStorage.setItem('insulog-lang', lang);
+ const t = TRANSLATIONS[lang];
+ document.querySelectorAll('[data-i18n]').forEach(el => {
+ const key = el.getAttribute('data-i18n');
+ if(t[key]) el.textContent = t[key];
+ });
+ document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+ const key = el.getAttribute('data-i18n-ph');
+ if(t[key]) el.placeholder = t[key];
+ });
+ // Update calc button state
+ const btn = document.getElementById('btn-calc');
+ if(btn && !btn.disabled) btn.textContent = t['btn-calc'];
+ // Update lang toggle buttons
+ document.getElementById('btn-fr').classList.toggle('active', lang==='fr');
+ document.getElementById('btn-en').classList.toggle('active', lang==='en');
+ // Update sidebar subtitle
+ const sub = document.querySelector('.sidebar-logo div div:last-child div:last-child');
+ if(sub) sub.textContent = t['app-sub'];
+ }
+
+ function setLang(lang){ applyLang(lang); translateMealSelect(lang); }
+  function translateMealSelect(lang){
+    document.querySelectorAll('#meal-type option').forEach(opt=>{
+      const txt = opt.getAttribute('data-'+lang);
+      if(txt) opt.textContent = txt;
+    });
+  }
+
+ // Apply on load
+ document.addEventListener('DOMContentLoaded', () => applyLang(currentLang));
+
+
+  function validerFormulaire(){
+    const btn = document.getElementById('btn-calc');
+    if(!btn) return;
+    let ok = true;
+    if(hasMeal){
+      const carbs = parseFloat(document.getElementById('carbs').value);
+      if(!carbs || carbs <= 0) ok = false;
+    }
+    btn.disabled = !ok;
+  }
+
+  // Hook inputs to validation
+  document.addEventListener('DOMContentLoaded', ()=>{
+    ['carbs','iob'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.addEventListener('input', validerFormulaire);
+    });
+    validerFormulaire();
+  });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InsuLog — Connexion</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#EFF6FF 0%,#F0FDFB 50%,#F5F3FF 100%);padding:24px;}
+  .logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:32px;}
+  .logo-icon{width:72px;height:72px;background:#2563EB;border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;box-shadow:0 8px 24px rgba(37,99,235,0.3);}
+  .logo-name{font-size:28px;font-weight:700;color:#0F172A;}
+  .logo-sub{font-size:14px;color:#64748B;margin-top:4px;}
+  .card{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:440px;box-shadow:0 4px 32px rgba(0,0,0,0.08);}
+  .card-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:6px;}
+  .card-sub{font-size:14px;color:#64748B;text-align:center;margin-bottom:24px;}
+  .security-box{background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;padding:14px 16px;display:flex;gap:12px;margin-bottom:24px;align-items:flex-start;}
+  .security-icon{width:36px;height:36px;background:#059669;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .security-title{font-size:14px;font-weight:700;color:#065F46;margin-bottom:4px;}
+  .security-text{font-size:12px;color:#047857;line-height:1.5;}
+  .security-badges{display:flex;gap:10px;margin-top:8px;}
+  .sec-badge{font-size:11px;color:#059669;font-weight:600;display:flex;align-items:center;gap:4px;}
+  .field{margin-bottom:16px;}
+  .field label{font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;}
+  .input-wrap{position:relative;}
+  .input-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#9CA3AF;}
+  .input-wrap input{width:100%;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:12px 12px 12px 42px;font-size:14px;font-family:inherit;outline:none;color:#0F172A;transition:border-color 0.15s;}
+  .input-wrap input:focus{border-color:#3B82F6;background:#fff;}
+  .error{background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;font-size:13px;color:#DC2626;margin-bottom:16px;display:{% if error %}block{% else %}none{% endif %};}
+  .btn-login{width:100%;padding:14px;background:#2563EB;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s;margin-top:8px;}
+  .btn-login:hover{background:#1d4ed8;}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  .shake{animation:shake 0.4s ease;}
+  .lang-toggle{display:flex;gap:6px;justify-content:center;margin-bottom:20px;}
+  .lang-btn{padding:5px 14px;border-radius:6px;border:1px solid #E2E8F0;background:#fff;color:#64748B;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+  .lang-btn.active{background:#2563EB;color:#fff;border-color:#2563EB;}
+  .forgot{display:block;text-align:center;margin-top:16px;font-size:14px;font-weight:600;color:#2563EB;text-decoration:none;}
+  .footer{margin-top:32px;text-align:center;}
+  .footer p{font-size:12px;color:#94A3B8;}
+</style>
+</head>
+<body>
+
+<div class="logo-wrap">
+  <div class="logo-icon">
+    <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+  </div>
+  <div class="logo-name">InsuLog</div>
+  <div class="logo-sub">Insulin Dose Management System</div>
+</div>
+
+<div class="card">
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+  <div class="card-title" data-i18n="title">Connexion</div>
+  <div class="card-sub" data-i18n="sub">Entrez vos identifiants pour accéder à votre compte</div>
+
+  <div class="security-box">
+    <div class="security-icon">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+    </div>
+    <div>
+      <div class="security-title" data-i18n="sec-title">Données Médicales Sécurisées</div>
+      <div class="security-text"><span data-i18n="sec-text">Vos données de santé sont entièrement chiffrées avec le protocole AES-256 et stockées conformément aux normes HIPAA et RGPD.</span></div>
+      <div class="security-badges">
+        <span class="sec-badge">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Encryption SSL/TLS
+        </span>
+        <span class="sec-badge">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
+          Stockage chiffré
+        </span>
+      </div>
+    </div>
+  </div>
+
+  {% if error %}
+  <div class="error" id="error-box" style="display:flex;align-items:center;gap:10px;">
+    <div style="width:32px;height:32px;background:#FEE2E2;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#DC2626" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#DC2626;margin-bottom:2px;">Identifiants incorrects</div>
+      <div style="font-size:12px;color:#EF4444;">{{ error }}</div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded',()=>{
+      const box = document.getElementById('error-box');
+      const card = document.querySelector('.card');
+      card.classList.add('shake');
+      box.style.opacity='0';box.style.transform='translateY(-8px)';box.style.transition='all 0.3s ease';
+      setTimeout(()=>{box.style.opacity='1';box.style.transform='translateY(0)';},50);
+    });
+  </script>
+  {% endif %}
+
+  <form method="POST">
+    <div class="field">
+      <label data-i18n="email-label">Email</label>
+      <div class="input-wrap">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        <input type="email" name="email" {% if error %}style="border-color:#FECACA;background:#FFF5F5;"{% endif %} placeholder="votre.email@exemple.com" required autocomplete="email">
+      </div>
+    </div>
+    <div class="field">
+      <label data-i18n="pass-label">Mot de passe</label>
+      <div class="input-wrap">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <input type="password" name="password" {% if error %}style="border-color:#FECACA;background:#FFF5F5;"{% endif %} placeholder="Entrez votre mot de passe" required autocomplete="current-password">
+      </div>
+    </div>
+    <button type="submit" class="btn-login" data-i18n="btn">Se connecter</button>
+  </form>
+  <a href="#" class="forgot" data-i18n="forgot">Mot de passe oublié ?</a>
+</div>
+
+<div class="footer">
+  <p data-i18n="footer1">Gestion médicale du diabète</p>
+  <p data-i18n="footer2">Diabète de type 1 · Suivi de l'insuline</p>
+</div>
+
+
+<script>
+const T = {
+  fr:{
+    "title":"Connexion","sub":"Entrez vos identifiants pour accéder à votre compte",
+    "sec-title":"Données Médicales Sécurisées",
+    "sec-text":"Vos données de santé sont entièrement chiffrées avec le protocole AES-256 et stockées conformément aux normes HIPAA et RGPD.",
+    "ssl":"Encryption SSL/TLS","storage":"Stockage chiffré",
+    "email-label":"Email","email-ph":"votre.email@exemple.com",
+    "pass-label":"Mot de passe","pass-ph":"Entrez votre mot de passe",
+    "btn":"Se connecter","forgot":"Mot de passe oublié ?",
+    "footer1":"Gestion médicale du diabète","footer2":"Diabète de type 1 · Suivi de l'insuline"
+  },
+  en:{
+    "title":"Sign In","sub":"Enter your credentials to access your account",
+    "sec-title":"Secure Medical Data",
+    "sec-text":"Your health data is fully encrypted with AES-256 protocol and stored in compliance with HIPAA and GDPR standards.",
+    "ssl":"SSL/TLS Encryption","storage":"Encrypted Storage",
+    "email-label":"Email","email-ph":"your.email@example.com",
+    "pass-label":"Password","pass-ph":"Enter your password",
+    "btn":"Sign In","forgot":"Forgot password?",
+    "footer1":"Medical-grade diabetes management","footer2":"Type 1 Diabetes · Insulin Tracking"
+  }
+};
+let lang = localStorage.getItem('insulog-lang')||'fr';
+function setLang(l){
+  lang=l; localStorage.setItem('insulog-lang',l);
+  const t=T[l];
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(t[k])el.textContent=t[k];});
+  const ep=document.querySelector('input[type="email"]'); if(ep&&t['email-ph']) ep.placeholder=t['email-ph'];
+  const pp=document.querySelector('input[type="password"]'); if(pp&&t['pass-ph']) pp.placeholder=t['pass-ph'];
+  document.getElementById('btn-fr').classList.toggle('active',l==='fr');
+  document.getElementById('btn-en').classList.toggle('active',l==='en');
+}
+document.addEventListener('DOMContentLoaded',()=>setLang(lang));
+</script>
+</body>
+</html>
