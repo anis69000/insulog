@@ -295,7 +295,7 @@ def login():
             session['user_email'] = user['email']
             session['prenom']     = user['prenom']
             session['is_admin']   = bool(user['is_admin'])
-            session['is_demo']    = bool(user.get('is_demo', 0))
+            session['is_demo']    = bool(user['is_demo'] if 'is_demo' in user.keys() else 0)
             return redirect(url_for('index'))
         error = "Vérifiez votre email et votre mot de passe."
     return render_template("login.html", error=error)
@@ -415,27 +415,22 @@ def calculer():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    """Page tableau de bord avec statistiques."""
-    profil = session.get("profil", {
-        "prenom":"Patient","tdd":38,"isf":2.6,"icr":12,
-        "target":6.0,"sexe":"F","age":28,"poids":68
-    })
-    hist = generer_historique_demo()
+    rows = db_query("SELECT * FROM injections WHERE user_id=%s ORDER BY ts DESC LIMIT 50",
+                    (session.get('user_id'),), fetchall=True) or []
+    profil_row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get('user_id'),), fetchone=True)
+    hist = [dict(r) for r in rows]
+    profil = dict(profil_row) if profil_row else {"prenom": session.get("prenom","Patient")}
 
-    # Calcul stats
-    avg_bg   = round(sum(h["bg"] for h in hist) / len(hist), 1)
-    total_ui = round(sum(h["dose"] for h in hist), 1)
-    tir_list = [h for h in hist if h["bg4h"] and 4 <= h["bg4h"] <= 10]
-    tir_pct  = round(len(tir_list) / len(hist) * 100)
-    nb_injections = len([h for h in hist if h.get("statut","injectee") == "injectee"])
+    if hist:
+        avg_bg        = round(sum(h["bg"] for h in hist) / len(hist), 1)
+        total_ui      = round(sum(h["dose"] for h in hist), 1)
+        tir_list      = [h for h in hist if 4 <= h["bg"] <= 10]
+        tir_pct       = round(len(tir_list) / len(hist) * 100)
+        nb_injections = len([h for h in hist if h.get("statut","injectee") == "injectee"])
+    else:
+        avg_bg, total_ui, tir_pct, nb_injections = 0, 0, 0, 0
 
-    stats = {
-        "avg_bg":   avg_bg,
-        "total_ui": total_ui,
-        "tir_pct":  tir_pct,
-        "nb_injections": nb_injections,
-    }
-
+    stats = {"avg_bg": avg_bg, "total_ui": total_ui, "tir_pct": tir_pct, "nb_injections": nb_injections}
     doses_chart = [{"label": h["heure"], "dose": h["dose"], "bg": h["bg"]} for h in reversed(hist[:7])]
     return render_template("dashboard.html", stats=stats, historique=hist,
                            doses_chart=json.dumps(doses_chart), profil=profil)
@@ -475,43 +470,25 @@ def profil_data():
 @app.route("/injection/sauvegarder", methods=["POST"])
 @login_required
 def sauvegarder_injection():
-    """Sauvegarde une injection ou un refus dans l'historique session."""
     d = request.get_json()
-    if "historique" not in session:
-        session["historique"] = []
-    entree = {
-        "id":           f"inj_{datetime.now().strftime('%Y%m%d%H%M%S')}",
-        "ts":           datetime.now().isoformat(),
-        "heure":        datetime.now().strftime("%H:%M"),
-        "date":         date_fr(datetime.now()),
-        "dose":         d.get("dose", 0),
-        "bg":           d.get("bg", 0),
-        "carbs":        d.get("carbs", 0),
-        "iob":          d.get("iob", 0),
-        "source":       d.get("source", "formule"),
-        "statut":       d.get("statut", "injectee"),
-        "commentaire":  d.get("commentaire", ""),
-        "bg4h":         None,
-    }
-    hist = list(session["historique"])
-    hist.insert(0, entree)
-    session["historique"] = hist
-    session.modified = True
-    return jsonify({"statut": "ok", "id": entree["id"]})
+    now = datetime.now()
+    inj_id = f"inj_{now.strftime('%Y%m%d%H%M%S')}_{session.get('user_id',0)}"
+    db_query("""INSERT INTO injections
+        (id,user_id,heure,date,ts,dose,bg,carbs,iob,source,statut,commentaire)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+        (inj_id, session.get('user_id'), now.strftime("%H:%M"), date_fr(now),
+         now.isoformat(), d.get("dose",0), d.get("bg",0), d.get("carbs",0),
+         d.get("iob",0), d.get("source","formule"), d.get("statut","injectee"),
+         d.get("commentaire","")), commit=True)
+    return jsonify({"statut": "ok", "id": inj_id})
 
 
 @app.route("/injection/bg4h", methods=["POST"])
 @login_required
 def sauvegarder_bg4h():
-    """Sauvegarde la glycémie 4h après injection."""
     d = request.get_json()
-    hist = list(session.get("historique", []))
-    for entree in hist:
-        if entree["id"] == d["id"]:
-            entree["bg4h"] = d["bg4h"]
-            break
-    session["historique"] = hist
-    session.modified = True
+    db_query("UPDATE injections SET bg4h=%s WHERE id=%s AND user_id=%s",
+             (d["bg4h"], d["id"], session.get('user_id')), commit=True)
     return jsonify({"statut": "ok"})
 
 
@@ -532,8 +509,6 @@ def historique():
                     (session.get('user_id'),), fetchall=True) or []
     profil_row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get('user_id'),), fetchone=True)
     hist = [dict(r) for r in rows]
-    if not hist:
-        hist = generer_historique_demo()
     return render_template("historique.html", historique=hist)
 
 
