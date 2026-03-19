@@ -124,12 +124,13 @@
  </div>
 </aside>
 
+<main class="main">
 {% if session.get('is_demo') %}
-<div style="background:#F59E0B;color:#fff;text-align:center;padding:10px;font-size:13px;font-weight:700;letter-spacing:0.05em;position:sticky;top:0;z-index:200;">
+<div style="background:#F59E0B;color:#fff;text-align:center;padding:10px 10px 10px 250px;font-size:13px;font-weight:700;letter-spacing:0.05em;position:fixed;top:0;left:0;right:0;z-index:200;">
   VERSION DÉMO — Vos données sont utilisées à des fins de recherche uniquement
 </div>
+<div style="height:40px;"></div>
 {% endif %}
-<main class="main">
  <div class="page-header" style="width:100%;max-width:680px;">
  <h2 data-i18n="page-title">Calculateur de dose</h2>
  <p data-i18n="page-sub">Calculez votre dose d'insuline selon votre glycémie et votre repas</p>
@@ -471,6 +472,36 @@
     });
     validerFormulaire();
   });
+
+
+  // ── Beta Testeur — Dose réelle ─────────────────────────────────────────────
+  let dernierInjId = null;
+
+  async function confirmerInjection(){
+    const bg=mode==="cgm"?cgmBg:parseFloat(document.getElementById("bg-manuel").value);
+    const resp = await fetch("/injection/sauvegarder",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({dose:dernierResultat?.dose||0,bg,carbs:dernierPayload?.carbs||0,iob:dernierPayload?.iob||0,source:dernierResultat?.source||"formule",statut:"injectee",commentaire:""})});
+    const data = await resp.json();
+    dernierInjId = data.id;
+    document.getElementById("action-buttons").style.display="none";
+    document.getElementById("confirm-injection").style.display="block";
+    document.getElementById("confirm-injection").scrollIntoView({behavior:"smooth"});
+    // Show demo field if beta testeur
+    const demoField = document.getElementById("demo-real-dose");
+    if(demoField){
+      document.getElementById("dose-modele-recap").textContent = dernierResultat?.dose || "—";
+      demoField.style.display="block";
+    }
+  }
+
+  async function enregistrerDoseReelle(){
+    const val = parseFloat(document.getElementById("dose-reelle-input").value);
+    if(!val||val<0||val>30){alert("Valeur invalide.");return;}
+    if(!dernierInjId){alert("Erreur — injection non trouvée.");return;}
+    await fetch("/injection/dose-reelle",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:dernierInjId,dose_reelle:val})});
+    document.getElementById("dose-reelle-confirm").style.display="block";
+    document.getElementById("btn-dose-reelle").disabled=true;
+    document.getElementById("dose-reelle-input").disabled=true;
+  }
 
 </script>
 </body>

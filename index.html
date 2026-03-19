@@ -124,12 +124,13 @@
  </div>
 </aside>
 
+<main class="main">
 {% if session.get('is_demo') %}
-<div style="background:#F59E0B;color:#fff;text-align:center;padding:10px;font-size:13px;font-weight:700;letter-spacing:0.05em;position:sticky;top:0;z-index:200;">
+<div style="background:#F59E0B;color:#fff;text-align:center;padding:10px 10px 10px 250px;font-size:13px;font-weight:700;letter-spacing:0.05em;position:fixed;top:0;left:0;right:0;z-index:200;">
   VERSION DÉMO — Vos données sont utilisées à des fins de recherche uniquement
 </div>
+<div style="height:40px;"></div>
 {% endif %}
-<main class="main">
  <div class="page-header" style="width:100%;max-width:680px;">
  <h2 data-i18n="page-title">Calculateur de dose</h2>
  <p data-i18n="page-sub">Calculez votre dose d'insuline selon votre glycémie et votre repas</p>
