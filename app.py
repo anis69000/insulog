@@ -295,7 +295,7 @@ def login():
             session['user_email'] = user['email']
             session['prenom']     = user['prenom']
             session['is_admin']   = bool(user['is_admin'])
-            session['is_demo']    = bool(user['is_demo'] if 'is_demo' in user.keys() else 0)
+            session['is_demo']    = int(dict(user).get('is_demo', 0)) == 1
             return redirect(url_for('index'))
         error = "Vérifiez votre email et votre mot de passe."
     return render_template("login.html", error=error)
@@ -304,7 +304,7 @@ def login():
 @login_required
 @admin_required
 def admin_users():
-    users = db_query("SELECT id,email,prenom,is_admin,created_at FROM users ORDER BY created_at DESC", fetchall=True) or []
+    users = db_query("SELECT id,email,prenom,is_admin,is_demo,created_at FROM users ORDER BY created_at DESC", fetchall=True) or []
     return render_template("admin_users.html", users=users)
 
 @app.route("/admin/users/create", methods=["POST"])
@@ -314,11 +314,12 @@ def admin_create_user():
     email    = request.form.get("email","").strip().lower()
     password = request.form.get("password","")
     prenom   = request.form.get("prenom","Patient")
-    is_admin = 1 if request.form.get("is_admin") else 0
+    is_admin = 1 if request.form.get("is_admin") == "1" else 0
+    is_demo  = 1 if request.form.get("is_demo") == "1" else 0
     if email and password:
         try:
-            db_query("INSERT INTO users (email,password_hash,prenom,is_admin) VALUES (%s,%s,%s,%s)",
-                     (email, hash_pw(password), prenom, is_admin), commit=True)
+            db_query("INSERT INTO users (email,password_hash,prenom,is_admin,is_demo) VALUES (%s,%s,%s,%s,%s)",
+                     (email, hash_pw(password), prenom, is_admin, is_demo), commit=True)
         except: pass
     return redirect(url_for('admin_users'))
 
