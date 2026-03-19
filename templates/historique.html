@@ -86,6 +86,11 @@
   </div>
 </aside>
 
+{% if session.get('is_demo') %}
+<div style="background:#F59E0B;color:#fff;text-align:center;padding:10px;font-size:13px;font-weight:700;letter-spacing:0.05em;position:sticky;top:0;z-index:200;">
+  VERSION DÉMO — Vos données sont utilisées à des fins de recherche uniquement
+</div>
+{% endif %}
 <main class="main">
   <div class="page-header">
     <h2 data-i18n="hist-title">Historique des injections</h2>
@@ -145,12 +150,42 @@
             </div>
           {% endif %}
         {% endif %}
+        {% if session.get('is_demo') and not is_refus %}
+          <div class="demo-real-dose" style="margin-top:10px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;">
+            <div style="font-size:11px;font-weight:700;color:#D97706;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Mode Démo — Votre dose réelle</div>
+            {% if e.dose_reelle %}
+              <div style="font-size:13px;color:#92400E;font-weight:600;">Dose réelle injectée : {{ e.dose_reelle }} UI</div>
+              {% if e.dose_reelle %}
+                <div style="font-size:12px;color:#B45309;margin-top:4px;">
+                  Écart avec le modèle : {{ "%.1f"|format((e.dose_reelle - e.dose)|abs) }} UI
+                  {% if e.dose_reelle > e.dose %}(+{{ "%.1f"|format(e.dose_reelle - e.dose) }} UI){% else %}(-{{ "%.1f"|format(e.dose - e.dose_reelle) }} UI){% endif %}
+                </div>
+              {% endif %}
+            {% else %}
+              <div style="display:flex;gap:8px;">
+                <input type="number" id="real_{{ loop.index }}" placeholder="Dose réelle injectée (UI)" min="0" max="30" step="0.5"
+                  style="flex:1;background:#fff;border:1px solid #FDE68A;border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;color:#0F172A;">
+                <button onclick="logDoseReelle('{{ e.id }}', '{{ loop.index }}')"
+                  style="padding:8px 14px;background:#F59E0B;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">
+                  Enregistrer
+                </button>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
     {% endfor %}
   {% endif %}
 </main>
 
 <script>
+async function logDoseReelle(id, idx){
+  const val = parseFloat(document.getElementById('real_'+idx).value);
+  if(!val||val<0||val>30){alert('Valeur invalide.');return;}
+  const resp = await fetch('/injection/dose-reelle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,dose_reelle:val})});
+  if((await resp.json()).statut==='ok') location.reload();
+}
+
 async function logBg4h(id, idx){
   const val = parseFloat(document.getElementById('bg4h_'+idx).value);
   if(!val||val<2||val>25){alert('Valeur invalide (2-25 mmol/L).');return;}

@@ -42,6 +42,7 @@ def init_db():
         password_hash TEXT NOT NULL,
         prenom TEXT DEFAULT 'Patient',
         is_admin INTEGER DEFAULT 0,
+        is_demo INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP)""")
     c.execute("""CREATE TABLE IF NOT EXISTS profils (
         id SERIAL PRIMARY KEY,
@@ -55,7 +56,7 @@ def init_db():
         dose REAL DEFAULT 0, bg REAL DEFAULT 0,
         carbs REAL DEFAULT 0, iob REAL DEFAULT 0,
         source TEXT DEFAULT 'formule', statut TEXT DEFAULT 'injectee',
-        commentaire TEXT DEFAULT '', bg4h REAL)""")
+        commentaire TEXT DEFAULT '', bg4h REAL, dose_reelle REAL)""")
     try:
         c.execute("INSERT INTO users (email,password_hash,prenom,is_admin) VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
                   (ADMIN_EMAIL, hash_pw("InsuLog2026!"), "Anis", 1))
@@ -287,6 +288,7 @@ def login():
             session['user_email'] = user['email']
             session['prenom']     = user['prenom']
             session['is_admin']   = bool(user['is_admin'])
+            session['is_demo']    = bool(user.get('is_demo', 0))
             return redirect(url_for('index'))
         error = "Vérifiez votre email et votre mot de passe."
     return render_template("login.html", error=error)
@@ -506,6 +508,15 @@ def sauvegarder_bg4h():
     return jsonify({"statut": "ok"})
 
 
+
+@app.route("/injection/dose-reelle", methods=["POST"])
+@login_required
+def sauvegarder_dose_reelle():
+    d = request.get_json()
+    db_query("UPDATE injections SET dose_reelle=%s WHERE id=%s AND user_id=%s",
+             (d["dose_reelle"], d["id"], session.get('user_id')), commit=True)
+    return jsonify({"statut": "ok"})
+
 @app.route("/historique")
 @login_required
 def historique():
@@ -518,6 +529,22 @@ def historique():
         hist = generer_historique_demo()
     return render_template("historique.html", historique=hist)
 
+
+
+@app.route("/admin/demo-data")
+@login_required
+@admin_required
+def admin_demo_data():
+    """Vue des données démo — comparaison modèle vs réel."""
+    rows = db_query("""
+        SELECT u.prenom, u.email, i.heure, i.date, i.dose as dose_modele,
+               i.dose_reelle, i.bg, i.carbs, i.source, i.statut
+        FROM injections i
+        JOIN users u ON u.id = i.user_id
+        WHERE u.is_demo = 1 AND i.dose_reelle IS NOT NULL
+        ORDER BY i.ts DESC
+    """, fetchall=True) or []
+    return render_template("admin_demo.html", rows=rows)
 
 @app.route("/sante")
 @login_required

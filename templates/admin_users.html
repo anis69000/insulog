@@ -60,6 +60,10 @@
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
       Gestion utilisateurs
     </a>
+    <a href="/admin/demo-data" class="nav-item">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Données Démo
+    </a>
   </nav>
   <div class="sidebar-footer">
     <p>Connecté en tant qu'admin</p>
@@ -72,6 +76,10 @@
 
 <main class="main">
   <div class="page-header">
+    <a href="/" style="display:inline-flex;align-items:center;gap:6px;color:#64748B;font-size:13px;font-weight:600;text-decoration:none;margin-bottom:12px;padding:7px 14px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;transition:all 0.15s;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='#fff'">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      Retour à l'application
+    </a>
     <h2>Gestion des utilisateurs</h2>
     <p>Créez et gérez les comptes patients d'InsuLog</p>
   </div>
@@ -98,6 +106,10 @@
         <input type="checkbox" name="is_admin" id="is_admin" style="width:16px;height:16px;">
         <label for="is_admin" style="font-size:13px;color:#64748B;">Accès administrateur</label>
       </div>
+      <div class="check-wrap" style="margin-top:6px;">
+        <input type="checkbox" name="is_demo" id="is_demo" style="width:16px;height:16px;">
+        <label for="is_demo" style="font-size:13px;color:#D97706;">Compte démo (patient testeur)</label>
+      </div>
       <button type="submit" class="btn btn-primary" style="margin-top:16px;">Créer le compte</button>
     </form>
   </div>
@@ -120,7 +132,7 @@
         <tr>
           <td style="font-weight:600;">{{ u.prenom }}</td>
           <td style="color:#64748B;">{{ u.email }}</td>
-          <td><span class="{{ 'badge-admin' if u.is_admin else 'badge-user' }}">{{ 'Admin' if u.is_admin else 'Patient' }}</span></td>
+          <td><span class="{{ 'badge-admin' if u.is_admin else 'badge-user' }}">{{ 'Admin' if u.is_admin else ('Démo' if u.is_demo else 'Patient') }}</span></td>
           <td style="color:#94A3B8;font-size:13px;">{{ u.created_at[:10] }}</td>
           <td>
             {% if not u.is_admin %}
