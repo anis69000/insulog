@@ -57,13 +57,21 @@ def init_db():
         carbs REAL DEFAULT 0, iob REAL DEFAULT 0,
         source TEXT DEFAULT 'formule', statut TEXT DEFAULT 'injectee',
         commentaire TEXT DEFAULT '', bg4h REAL, dose_reelle REAL)""")
-    # Migrations — ajouter colonnes manquantes si nécessaire
-    try: c.execute("ALTER TABLE users ADD COLUMN is_demo INTEGER DEFAULT 0")
-    except: pass
-    try: c.execute("ALTER TABLE injections ADD COLUMN dose_reelle REAL")
-    except: pass
-    try: c.execute("ALTER TABLE injections ADD COLUMN bg4h REAL")
-    except: pass
+    conn.commit()
+    conn.close()
+    # Migrations séparées (PostgreSQL)
+    for sql in [
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_demo INTEGER DEFAULT 0",
+        "ALTER TABLE injections ADD COLUMN IF NOT EXISTS dose_reelle REAL",
+        "ALTER TABLE injections ADD COLUMN IF NOT EXISTS bg4h REAL",
+    ]:
+        try:
+            mc = get_db(); mc.autocommit = True
+            mc.cursor().execute(sql)
+            mc.close()
+        except: pass
+    conn = get_db()
+    c = conn.cursor()
     try:
         c.execute("INSERT INTO users (email,password_hash,prenom,is_admin) VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
                   (ADMIN_EMAIL, hash_pw("InsuLog2026!"), "Anis", 1))
