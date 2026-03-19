@@ -57,6 +57,13 @@ def init_db():
         carbs REAL DEFAULT 0, iob REAL DEFAULT 0,
         source TEXT DEFAULT 'formule', statut TEXT DEFAULT 'injectee',
         commentaire TEXT DEFAULT '', bg4h REAL, dose_reelle REAL)""")
+    # Migrations — ajouter colonnes manquantes si nécessaire
+    try: c.execute("ALTER TABLE users ADD COLUMN is_demo INTEGER DEFAULT 0")
+    except: pass
+    try: c.execute("ALTER TABLE injections ADD COLUMN dose_reelle REAL")
+    except: pass
+    try: c.execute("ALTER TABLE injections ADD COLUMN bg4h REAL")
+    except: pass
     try:
         c.execute("INSERT INTO users (email,password_hash,prenom,is_admin) VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
                   (ADMIN_EMAIL, hash_pw("InsuLog2026!"), "Anis", 1))
@@ -536,14 +543,17 @@ def historique():
 @admin_required
 def admin_demo_data():
     """Vue des données démo — comparaison modèle vs réel."""
-    rows = db_query("""
-        SELECT u.prenom, u.email, i.heure, i.date, i.dose as dose_modele,
-               i.dose_reelle, i.bg, i.carbs, i.source, i.statut
-        FROM injections i
-        JOIN users u ON u.id = i.user_id
-        WHERE u.is_demo = 1 AND i.dose_reelle IS NOT NULL
-        ORDER BY i.ts DESC
-    """, fetchall=True) or []
+    try:
+        rows = db_query("""
+            SELECT u.prenom, u.email, i.heure, i.date, i.dose as dose_modele,
+                   i.dose_reelle, i.bg, i.carbs, i.source, i.statut
+            FROM injections i
+            JOIN users u ON u.id = i.user_id
+            WHERE u.is_demo = 1 AND i.dose_reelle IS NOT NULL
+            ORDER BY i.ts DESC
+        """, fetchall=True) or []
+    except:
+        rows = []
     return render_template("admin_demo.html", rows=rows)
 
 @app.route("/sante")
