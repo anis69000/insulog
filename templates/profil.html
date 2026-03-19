@@ -35,7 +35,7 @@
  .btn-auto{padding:9px 14px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;color:#2563EB;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s;height:40px;margin-top:22px;}
  .btn-auto:hover{background:#DBEAFE;}
  .cycle-box{background:#FDF2F8;border:1px solid #F9A8D4;border-radius:10px;padding:14px 16px;margin-top:8px;}
- .cycle-hint{font-size:12px;color:#DB2777;font-weight:500;margin-top:8px;}
+ .cycle-hint{font-size:12px;color:#DB2777;font-weight:500;margin-top:8px;font-size:13px;}
  .btn-save{width:100%;padding:13px;background:#1E3A8A;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.15s;margin-top:8px;}
  .btn-save:hover{background:#1e40af;}
  .toast{display:none;position:fixed;bottom:24px;right:24px;background:#059669;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,.15);}
@@ -163,10 +163,10 @@
  <div id="cycle-section" style="{% if profil.sexe == 'M' %}display:none{% endif %}">
  <div class="field">
  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
- <div style="width:32px;height:32px;background:#EC4899;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+ <div style="width:36px;height:36px;background:#EC4899;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
  </div>
- <span style="font-size:14px;font-weight:700;color:#DB2777;" data-i18n="cycle-title">Phase du cycle menstruel</span>
+ <span style="font-size:16px;font-weight:700;color:#DB2777;" data-i18n="cycle-title">Phase du cycle menstruel</span>
  </div>
  <label style="display:none;">Current Menstrual Cycle Phase</label>
  <select id="cycle">
@@ -180,6 +180,42 @@
 
  <button class="btn-save" onclick="sauvegarder()" data-i18n="save-btn">Enregistrer le profil</button>
  <div class="toast" id="toast" data-i18n="save-ok">Profil enregistré avec succès</div>
+
+<!-- Popup premier accès -->
+<div id="modal-overlay" style="position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
+  <div style="background:#fff;border-radius:16px;padding:36px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:popIn 0.3s ease;">
+    <div style="display:flex;justify-content:center;margin-bottom:20px;">
+      <div style="width:64px;height:64px;background:#EFF6FF;border-radius:16px;display:flex;align-items:center;justify-content:center;">
+        <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#2563EB" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+    </div>
+    <h2 style="font-size:20px;font-weight:700;text-align:center;color:#0F172A;margin-bottom:8px;" data-i18n="modal-title">Configurez votre profil médical</h2>
+    <p style="font-size:14px;color:#64748B;text-align:center;line-height:1.6;margin-bottom:20px;" data-i18n="modal-text">Ces informations permettent à InsuLog de personnaliser vos recommandations de dose. Nous vous recommandons de remplir ce profil avec votre médecin ou endocrinologue.</p>
+    <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:14px 16px;margin-bottom:24px;">
+      <div style="font-size:13px;color:#0369A1;line-height:1.6;">
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#0369A1" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span data-i18n="modal-tip1">La Dose Totale Journalière (TDD) se trouve sur votre ordonnance d'insuline.</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#0369A1" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span data-i18n="modal-tip2">Le FSI et le RIG peuvent être calculés automatiquement depuis votre TDD.</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#0369A1" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span data-i18n="modal-tip3">Vos données sont chiffrées et ne sont jamais partagées sans votre accord.</span>
+        </div>
+      </div>
+    </div>
+    <button onclick="fermerModal()" style="width:100%;padding:13px;background:#1E3A8A;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;" data-i18n="modal-btn">Compris, je configure mon profil</button>
+    <button onclick="fermerModal()" style="width:100%;padding:10px;background:none;border:none;color:#94A3B8;font-size:13px;cursor:pointer;font-family:inherit;margin-top:8px;" data-i18n="modal-skip">Passer pour l'instant</button>
+  </div>
+</div>
+
+<style>
+@keyframes popIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+</style>
+
 </main>
 
 <script>
@@ -214,7 +250,14 @@
 
  const TRANSLATIONS = {
  fr: {
- "logout":"Déconnexion","nav-dose":"Calculateur de dose","nav-dashboard":"Tableau de bord",
+ "logout":"Déconnexion",
+    "modal-title":"Configurez votre profil médical",
+    "modal-text":"Ces informations permettent à InsuLog de personnaliser vos recommandations de dose. Nous vous recommandons de remplir ce profil avec votre médecin ou endocrinologue.",
+    "modal-tip1":"La Dose Totale Journalière (TDD) se trouve sur votre ordonnance d'insuline.",
+    "modal-tip2":"Le FSI et le RIG peuvent être calculés automatiquement depuis votre TDD.",
+    "modal-tip3":"Vos données sont chiffrées et ne sont jamais partagées sans votre accord.",
+    "modal-btn":"Compris, je configure mon profil",
+    "modal-skip":"Passer pour l'instant","nav-dose":"Calculateur de dose","nav-dashboard":"Tableau de bord",
  "nav-history":"Historique injections","nav-profile":"Profil patient",
  "app-sub":"Gestion diabète de type 1",
  // dashboard
@@ -251,7 +294,14 @@
  "model-status":"Statut modèle",
  },
  en: {
- "logout":"Sign Out","nav-dose":"Dose Calculator","nav-dashboard":"Dashboard",
+ "logout":"Sign Out",
+    "modal-title":"Set Up Your Medical Profile",
+    "modal-text":"This information allows InsuLog to personalize your dose recommendations. We recommend filling out this profile with your doctor or endocrinologist.",
+    "modal-tip1":"Your Total Daily Dose (TDD) can be found on your insulin prescription.",
+    "modal-tip2":"ISF and ICR can be automatically calculated from your TDD.",
+    "modal-tip3":"Your data is encrypted and never shared without your consent.",
+    "modal-btn":"Got it, set up my profile",
+    "modal-skip":"Skip for now","nav-dose":"Dose Calculator","nav-dashboard":"Dashboard",
  "nav-history":"Injection History","nav-profile":"Patient Profile",
  "app-sub":"Type 1 Diabetes Management",
  // dashboard
@@ -310,6 +360,19 @@
  }
  function setLang(lang){ applyLang(lang); }
  document.addEventListener('DOMContentLoaded', () => applyLang(currentLang));
+
+
+  function fermerModal(){
+    document.getElementById('modal-overlay').style.display='none';
+    localStorage.setItem('insulog-profil-seen','1');
+  }
+  // Hide immediately if already seen, otherwise show
+  (function(){
+    if(localStorage.getItem('insulog-profil-seen')){
+      var m = document.getElementById('modal-overlay');
+      if(m) m.style.display='none';
+    }
+  })();
 
 </script>
 </body>

@@ -5,6 +5,9 @@ Prédiction de dose d'insuline pour diabète de type 1
 """
 
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+import hashlib
+import psycopg2
+import psycopg2.extras
 import joblib
 import json
 import math
@@ -20,19 +23,77 @@ def date_fr(dt): return f"{JOURS_FR[dt.weekday()]} {dt.day} {MOIS_FR[dt.month]}"
 app = Flask(__name__)
 app.secret_key = "insulog_hec_2026"
 
-# ── Utilisateurs ──────────────────────────────────────────────────────────────
-USERS = {
-    "patient@insulog.com": "InsuLog2026",
-    "demo@insulog.com":    "demo1234",
-}
-
 from functools import wraps
+
+ADMIN_EMAIL = "anis@insulog.com"
+def get_db():
+    DATABASE_URL = os.environ.get("DATABASE_URL", "").replace("postgres://", "postgresql://")
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+    return conn
+
+def hash_pw(p): return __import__('hashlib').sha256(p.encode()).hexdigest()
+
+def init_db():
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        prenom TEXT DEFAULT 'Patient',
+        is_admin INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS profils (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER UNIQUE NOT NULL,
+        tdd REAL DEFAULT 38, isf REAL DEFAULT 2.6, icr REAL DEFAULT 12,
+        target REAL DEFAULT 6.0, age INTEGER DEFAULT 28, poids REAL DEFAULT 68,
+        sexe TEXT DEFAULT 'F', luteal INTEGER DEFAULT 0)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS injections (
+        id TEXT PRIMARY KEY, user_id INTEGER NOT NULL,
+        heure TEXT, date TEXT, ts TEXT,
+        dose REAL DEFAULT 0, bg REAL DEFAULT 0,
+        carbs REAL DEFAULT 0, iob REAL DEFAULT 0,
+        source TEXT DEFAULT 'formule', statut TEXT DEFAULT 'injectee',
+        commentaire TEXT DEFAULT '', bg4h REAL)""")
+    try:
+        c.execute("INSERT INTO users (email,password_hash,prenom,is_admin) VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+                  (ADMIN_EMAIL, hash_pw("InsuLog2026!"), "Anis", 1))
+    except: pass
+    conn.commit()
+    conn.close()
+
+init_db()
+
+
+def db_query(sql, params=(), fetchone=False, fetchall=False, commit=False):
+    """Helper unifié pour toutes les requêtes PostgreSQL."""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(sql, params)
+    result = None
+    if fetchone:
+        result = cur.fetchone()
+    elif fetchall:
+        result = cur.fetchall()
+    if commit:
+        conn.commit()
+    conn.close()
+    return result
+
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if not session.get('logged_in'):
-            from flask import redirect, url_for
+        if not session.get('user_id'):
             return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('is_admin'):
+            return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated
 
@@ -220,12 +281,47 @@ def login():
     if request.method == "POST":
         email    = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
-        if email in USERS and USERS[email] == password:
-            session['logged_in'] = True
-            session['user_email'] = email
+        user = db_query("SELECT * FROM users WHERE email=%s", (email,), fetchone=True)
+        if user and user["password_hash"] == hash_pw(password):
+            session['user_id']    = user['id']
+            session['user_email'] = user['email']
+            session['prenom']     = user['prenom']
+            session['is_admin']   = bool(user['is_admin'])
             return redirect(url_for('index'))
         error = "Vérifiez votre email et votre mot de passe."
     return render_template("login.html", error=error)
+
+@app.route("/admin/users")
+@login_required
+@admin_required
+def admin_users():
+    users = db_query("SELECT id,email,prenom,is_admin,created_at FROM users ORDER BY created_at DESC", fetchall=True) or []
+    return render_template("admin_users.html", users=users)
+
+@app.route("/admin/users/create", methods=["POST"])
+@login_required
+@admin_required
+def admin_create_user():
+    email    = request.form.get("email","").strip().lower()
+    password = request.form.get("password","")
+    prenom   = request.form.get("prenom","Patient")
+    is_admin = 1 if request.form.get("is_admin") else 0
+    if email and password:
+        try:
+            db_query("INSERT INTO users (email,password_hash,prenom,is_admin) VALUES (%s,%s,%s,%s)",
+                     (email, hash_pw(password), prenom, is_admin), commit=True)
+        except: pass
+    return redirect(url_for('admin_users'))
+
+@app.route("/admin/users/delete/<int:uid>", methods=["POST"])
+@login_required
+@admin_required
+def admin_delete_user(uid):
+    if uid != session.get('user_id'):
+        db_query("DELETE FROM injections WHERE user_id=%s", (uid,), commit=True)
+        db_query("DELETE FROM profils WHERE user_id=%s", (uid,), commit=True)
+        db_query("DELETE FROM users WHERE id=%s", (uid,), commit=True)
+    return redirect(url_for('admin_users'))
 
 @app.route("/logout")
 def logout():
@@ -252,8 +348,9 @@ def calculer():
     """Calcule la dose d'insuline recommandée."""
     d = request.get_json()
 
-    # Récupère le profil sauvegardé ou utilise les valeurs envoyées
-    profil = session.get("profil", {})
+    # Récupère le profil depuis la base de données
+    profil_row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get('user_id',0),), fetchone=True)
+    profil = dict(profil_row) if profil_row else {}
     bg       = float(d["bg"])
     target   = float(profil.get("target",  d.get("target", 6.0)))
     carbs    = float(d.get("carbs", 0))
@@ -413,7 +510,10 @@ def sauvegarder_bg4h():
 @login_required
 def historique():
     """Page historique des injections."""
-    hist = session.get("historique", [])
+    rows = db_query("SELECT * FROM injections WHERE user_id=%s ORDER BY ts DESC LIMIT 50",
+                    (session.get('user_id'),), fetchall=True) or []
+    profil_row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get('user_id'),), fetchone=True)
+    hist = [dict(r) for r in rows]
     if not hist:
         hist = generer_historique_demo()
     return render_template("historique.html", historique=hist)

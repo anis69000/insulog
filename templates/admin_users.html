@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InsuLog — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A;display:flex;min-height:100vh;}
+  .sidebar{width:240px;min-height:100vh;background:#fff;border-right:1px solid #E2E8F0;display:flex;flex-direction:column;padding:24px 16px;position:fixed;top:0;left:0;bottom:0;}
+  .sidebar-logo{padding:4px 4px 20px;border-bottom:1px solid #F1F5F9;margin-bottom:16px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;text-decoration:none;color:#64748B;font-size:14px;font-weight:500;margin-bottom:2px;}
+  .nav-item:hover{background:#F8FAFC;color:#0F172A;}
+  .nav-item.active{background:#2563EB;color:#fff;font-weight:600;box-shadow:0 4px 16px rgba(37,99,235,0.40);}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;}
+  .sidebar-footer{margin-top:auto;padding:12px;border-radius:8px;background:#F8FAFC;border:1px solid #E2E8F0;}
+  .sidebar-footer p{font-size:11px;color:#94A3B8;}
+  .main{margin-left:240px;flex:1;padding:32px;}
+  .page-header{margin-bottom:28px;}
+  .page-header h2{font-size:24px;font-weight:700;}
+  .page-header p{font-size:14px;color:#64748B;margin-top:4px;}
+  .card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:24px;margin-bottom:20px;}
+  .card-title{font-size:15px;font-weight:700;margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+  .field label{font-size:12px;font-weight:500;color:#64748B;}
+  .field input{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;outline:none;width:100%;}
+  .field input:focus{border-color:#3B82F6;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .btn{padding:10px 20px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .btn-primary{background:#1E3A8A;color:#fff;}
+  .btn-danger{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;}
+  table{width:100%;border-collapse:collapse;}
+  th{text-align:left;font-size:12px;font-weight:600;color:#64748B;padding:10px 16px;border-bottom:2px solid #E2E8F0;}
+  td{padding:12px 16px;border-bottom:1px solid #F1F5F9;font-size:14px;}
+  tr:hover td{background:#F8FAFC;}
+  .badge-admin{background:#EFF6FF;color:#2563EB;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;}
+  .badge-user{background:#F1F5F9;color:#64748B;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;}
+  .check-wrap{display:flex;align-items:center;gap:8px;margin-top:4px;}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:36px;height:36px;background:#2563EB;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <div>
+        <div style="font-size:18px;font-weight:700;color:#0F172A;">InsuLog</div>
+        <div style="font-size:11px;color:#94A3B8;">Administration</div>
+      </div>
+    </div>
+  </div>
+  <nav>
+    <a href="/" class="nav-item">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      Calculateur de dose
+    </a>
+    <a href="/admin/users" class="nav-item active">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      Gestion utilisateurs
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <p>Connecté en tant qu'admin</p>
+    <a href="/logout" style="display:flex;align-items:center;gap:8px;padding:8px 0;color:#EF4444;font-size:13px;font-weight:600;text-decoration:none;margin-top:8px;">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      Déconnexion
+    </a>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <h2>Gestion des utilisateurs</h2>
+    <p>Créez et gérez les comptes patients d'InsuLog</p>
+  </div>
+
+  <!-- Créer un utilisateur -->
+  <div class="card">
+    <div class="card-title">Créer un nouveau compte</div>
+    <form method="POST" action="/admin/users/create">
+      <div class="grid-3">
+        <div class="field">
+          <label>Prénom</label>
+          <input type="text" name="prenom" placeholder="ex: Marie" required>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="email@exemple.com" required>
+        </div>
+        <div class="field">
+          <label>Mot de passe</label>
+          <input type="text" name="password" placeholder="Mot de passe temporaire" required>
+        </div>
+      </div>
+      <div class="check-wrap">
+        <input type="checkbox" name="is_admin" id="is_admin" style="width:16px;height:16px;">
+        <label for="is_admin" style="font-size:13px;color:#64748B;">Accès administrateur</label>
+      </div>
+      <button type="submit" class="btn btn-primary" style="margin-top:16px;">Créer le compte</button>
+    </form>
+  </div>
+
+  <!-- Liste des utilisateurs -->
+  <div class="card">
+    <div class="card-title">Utilisateurs ({{ users|length }})</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Prénom</th>
+          <th>Email</th>
+          <th>Rôle</th>
+          <th>Créé le</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td style="font-weight:600;">{{ u.prenom }}</td>
+          <td style="color:#64748B;">{{ u.email }}</td>
+          <td><span class="{{ 'badge-admin' if u.is_admin else 'badge-user' }}">{{ 'Admin' if u.is_admin else 'Patient' }}</span></td>
+          <td style="color:#94A3B8;font-size:13px;">{{ u.created_at[:10] }}</td>
+          <td>
+            {% if not u.is_admin %}
+            <form method="POST" action="/admin/users/delete/{{ u.id }}" style="display:inline;" onsubmit="return confirm('Supprimer ce compte ?')">
+              <button type="submit" class="btn btn-danger" style="padding:6px 14px;font-size:13px;">Supprimer</button>
+            </form>
+            {% else %}
+            <span style="color:#94A3B8;font-size:13px;">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>
