@@ -49,7 +49,7 @@ def init_db():
         user_id INTEGER UNIQUE NOT NULL,
         tdd REAL DEFAULT 38, isf REAL DEFAULT 2.6, icr REAL DEFAULT 12,
         target REAL DEFAULT 6.0, age INTEGER DEFAULT 28, poids REAL DEFAULT 68,
-        sexe TEXT DEFAULT 'F', luteal INTEGER DEFAULT 0)""")
+        sexe TEXT DEFAULT 'F', luteal INTEGER DEFAULT 0, unite TEXT DEFAULT 'mmol')""")
     c.execute("""CREATE TABLE IF NOT EXISTS injections (
         id TEXT PRIMARY KEY, user_id INTEGER NOT NULL,
         heure TEXT, date TEXT, ts TEXT,
@@ -62,6 +62,7 @@ def init_db():
     # Migrations séparées (PostgreSQL)
     for sql in [
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_demo INTEGER DEFAULT 0",
+        "ALTER TABLE profils ADD COLUMN IF NOT EXISTS unite TEXT DEFAULT 'mmol'",
         "ALTER TABLE injections ADD COLUMN IF NOT EXISTS dose_reelle REAL",
         "ALTER TABLE injections ADD COLUMN IF NOT EXISTS bg4h REAL",
     ]:
@@ -304,6 +305,7 @@ def login():
             session['prenom']     = user['prenom']
             session['is_admin']   = bool(user['is_admin'])
             session['is_demo']    = int(dict(user).get('is_demo', 0)) == 1
+            # Load unite from profil
             return redirect(url_for('index'))
         error = "Vérifiez votre email et votre mot de passe."
     return render_template("login.html", error=error)
@@ -369,8 +371,12 @@ def calculer():
     # Récupère le profil depuis la base de données
     profil_row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get('user_id',0),), fetchone=True)
     profil = dict(profil_row) if profil_row else {}
-    bg       = float(d["bg"])
-    target   = float(profil.get("target",  d.get("target", 6.0)))
+    unite = profil.get("unite", "mmol")
+    bg_raw   = float(d["bg"])
+    unite    = profil.get("unite", "mmol")
+    bg       = round(bg_raw / 18.0182, 1) if unite == "mgdl" else bg_raw
+    target_raw = float(profil.get("target", d.get("target", 6.0)))
+    target   = round(target_raw / 18.0182, 1) if unite == "mgdl" else target_raw
     carbs    = float(d.get("carbs", 0))
     icr      = float(profil.get("icr",     d.get("icr", 12)))
     isf      = float(profil.get("isf",     d.get("isf", 2.6)))
