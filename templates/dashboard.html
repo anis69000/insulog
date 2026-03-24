@@ -75,6 +75,11 @@
     .chart-sub { font-size: 11px; }
   }
 
+
+  @media (max-width: 768px) {
+    .demo-banner { left: 0 !important; font-size: 11px !important; padding: 7px 12px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -117,7 +122,7 @@
 
 <main class="main">
 {% if session.get('is_demo') %}
-<div style="background:#F59E0B;color:#fff;text-align:center;padding:10px;font-size:13px;font-weight:700;letter-spacing:0.05em;position:fixed;top:0;left:240px;right:0;z-index:200;">
+<div class="demo-banner" style="background:#F59E0B;color:#fff;text-align:center;padding:8px 16px;font-size:12px;font-weight:700;letter-spacing:0.04em;position:fixed;top:0;left:240px;right:0;z-index:200;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
   VERSION DÉMO — Vos données sont utilisées à des fins de recherche uniquement
 </div>
 <div style="height:40px;"></div>
