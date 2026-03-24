@@ -248,7 +248,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  </div>
  <div id="cgm-panel"><p style="font-size:13px;color:#94A3B8;" data-i18n="cgm-live">Lecture CGM en direct ci-dessus.</p></div>
  <div id="manuel-panel" style="display:none;">
- <div class="field"><label data-i18n="bg-label">Glycémie (mmol/L)</label><input type="number" id="bg-manuel" value="10.5" min="2" max="30" step="0.1"></div>
+ <div class="field"><label data-i18n="bg-label">Glycémie (<span id="unit-label-input">mmol/L</span>)</label><input type="number" id="bg-manuel" value="10.5" min="2" max="30" step="0.1"></div>
  </div>
  </div>
 
@@ -378,7 +378,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  const arrow=cgmTrend>0.06?"↑↑":cgmTrend>0.02?"↑":cgmTrend<-0.06?"↓↓":cgmTrend<-0.02?"↓":"→";
  const cls=bgClass(cgmBg);
  document.getElementById("cgm-val").textContent=cgmBg+" "+arrow;
- document.getElementById("cgm-label").textContent="mmol/L · "+bgLabel(cgmBg);
+ document.getElementById("cgm-label").textContent=UNIT_LABEL+" · "+bgLabel(cgmBg);
  document.getElementById("cgm-mg").textContent=mmToMg(cgmBg)+" mg/dL";
  document.getElementById("cgm-card").className="cgm-card"+(cls?" "+cls:"");
  document.getElementById("cgm-badge").className="cgm-badge"+(cls?" "+cls:"");

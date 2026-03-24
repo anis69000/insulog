@@ -448,7 +448,7 @@ def dashboard():
     stats = {"avg_bg": avg_bg, "total_ui": total_ui, "tir_pct": tir_pct, "nb_injections": nb_injections}
     doses_chart = [{"label": h["heure"], "dose": h["dose"], "bg": h["bg"]} for h in reversed(hist[:7])]
     return render_template("dashboard.html", stats=stats, historique=hist,
-                           doses_chart=json.dumps(doses_chart), profil=profil)
+                           doses_chart=json.dumps(doses_chart), profil=profil, unite=session.get("unite","mmol"))
 
 
 @app.route("/profil", methods=["GET", "POST"])
@@ -524,7 +524,7 @@ def historique():
                     (session.get('user_id'),), fetchall=True) or []
     profil_row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get('user_id'),), fetchone=True)
     hist = [dict(r) for r in rows]
-    return render_template("historique.html", historique=hist)
+    return render_template("historique.html", historique=hist, unite=session.get("unite","mmol"))
 
 
 

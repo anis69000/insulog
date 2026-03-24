@@ -196,7 +196,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  </div>
  <div class="field-row" style="margin-bottom:16px;">
  <div class="field">
- <label data-i18n="isf-label">Facteur de sensibilité à l'insuline (FSI)</label>
+ <label data-i18n="isf-label">Facteur de sensibilité à l'insuline (FSI) — <span class="unit-isf">mmol/L/UI</span></label>
  <div class="input-with-unit">
  <input type="number" id="isf" value="{{ profil.isf }}" min="0.5" max="8" step="0.1">
  <span class="input-unit">mmol/L/U</span>
@@ -318,14 +318,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  }
  async function sauvegarder(){
  const data={
- tdd:parseFloat(document.getElementById('tdd').value),
- isf:parseFloat(document.getElementById('isf').value),
- icr:parseFloat(document.getElementById('icr').value),
- target:parseFloat(document.getElementById('target').value),
- age:parseInt(document.getElementById('age').value),
- poids:parseFloat(document.getElementById('poids').value),
- sexe:document.getElementById('sexe').value,
- luteal:document.getElementById('cycle').value==='true',
+   tdd:parseFloat(document.getElementById('tdd').value),
+   isf:displayToMmol(parseFloat(document.getElementById('isf').value)),
+   icr:parseFloat(document.getElementById('icr').value),
+   target:displayToMmol(parseFloat(document.getElementById('target').value)),
+   age:parseInt(document.getElementById('age').value),
+   poids:parseFloat(document.getElementById('poids').value),
+   sexe:document.getElementById('sexe').value,
+   luteal:document.getElementById('cycle').value==='true',
+   unite:currentUnite,
  };
  await fetch('/profil',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
  const t=document.getElementById('toast');
@@ -335,7 +336,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
 
  const TRANSLATIONS = {
  fr: {
- "logout":"Déconnexion",
+ "logout":"Déconnexion","unite-label":"Unité de glycémie","unite-hint":"Choisissez l'unité affichée dans toute l'application.",
     "modal-title":"Configurez votre profil médical",
     "modal-text":"Ces informations permettent à InsuLog de personnaliser vos recommandations de dose. Nous vous recommandons de remplir ce profil avec votre médecin ou endocrinologue.",
     "modal-tip1":"La Dose Totale Journalière (TDD) se trouve sur votre ordonnance d'insuline.",
@@ -379,7 +380,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  "model-status":"Statut modèle",
  },
  en: {
- "logout":"Sign Out",
+ "logout":"Sign Out","unite-label":"Blood Glucose Unit","unite-hint":"Choose the unit displayed throughout the app.",
     "modal-title":"Set Up Your Medical Profile",
     "modal-text":"This information allows InsuLog to personalize your dose recommendations. We recommend filling out this profile with your doctor or endocrinologist.",
     "modal-tip1":"Your Total Daily Dose (TDD) can be found on your insulin prescription.",
