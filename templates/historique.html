@@ -234,7 +234,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
             </div>
           {% endif %}
         {% endif %}
-        {% if session.get('is_demo') and not is_refus %}
+        {% if session.get('is_demo') %}
           <div class="demo-real-dose" style="margin-top:10px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;">
             <div style="font-size:11px;font-weight:700;color:#D97706;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Mode Démo — Votre dose réelle</div>
             {% if e.dose_reelle %}
