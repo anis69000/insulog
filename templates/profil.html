@@ -293,7 +293,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  <div class="toast" id="toast" data-i18n="save-ok">Profil enregistré avec succès</div>
 
 <!-- Popup premier accès -->
-<div id="modal-overlay" style="position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
+<div id="modal-overlay" style="position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
   <div style="background:#fff;border-radius:16px;padding:36px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:popIn 0.3s ease;">
     <div style="display:flex;justify-content:center;margin-bottom:20px;">
       <div style="width:64px;height:64px;background:#EFF6FF;border-radius:16px;display:flex;align-items:center;justify-content:center;">
@@ -478,13 +478,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
     document.getElementById('modal-overlay').style.display='none';
     localStorage.setItem('insulog-profil-seen','1');
   }
-  // Hide immediately if already seen, otherwise show
-  (function(){
-    if(localStorage.getItem('insulog-profil-seen')){
-      var m = document.getElementById('modal-overlay');
-      if(m) m.style.display='none';
-    }
-  })();
+  // Show modal every time
+  document.addEventListener('DOMContentLoaded', function(){
+    var m = document.getElementById('modal-overlay');
+    if(m) m.style.display='flex';
+  });
 
 </script>
 <nav class="mobile-nav">
