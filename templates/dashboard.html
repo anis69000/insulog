@@ -86,6 +86,7 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px 16px; background: #fff; border-bottom: 1px solid #E2E8F0;
       position: sticky; top: 0; z-index: 150;
+      margin: 0; width: 100%; left: 0; right: 0;
     }
     .mobile-header-logo { display: flex; align-items: center; gap: 10px; }
     .mobile-header-logo .logo-icon { width: 36px; height: 36px; background: #2563EB; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
@@ -138,14 +139,14 @@
 </aside>
 
 <main class="main">
-<header class="mobile-header">
+<header class="mobile-header" style="margin:0;padding:12px 16px;border-radius:0;">
   <div class="mobile-header-logo">
     <div class="logo-icon">
       <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
     </div>
     <div>
       <div class="logo-name">InsuLog</div>
-      <div class="logo-sub">● CGM Live</div>
+  
     </div>
   </div>
   <a href="/logout" class="mobile-logout">
