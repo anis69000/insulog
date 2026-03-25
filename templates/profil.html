@@ -295,10 +295,24 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
   <button onclick="sauvegarder()" class="btn-save" data-i18n="save-btn">Enregistrer le profil</button>
   <div class="toast" id="toast">✓ Profil enregistré avec succès</div>
 
-
-
+<!-- Popup premier accès -->
+<div id="modal-overlay" style="position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
+  <div style="background:#fff;border-radius:16px;padding:36px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:popIn 0.3s ease;">
+    <div style="display:flex;justify-content:center;margin-bottom:20px;">
+      <div style="width:64px;height:64px;background:#EFF6FF;border-radius:16px;display:flex;align-items:center;justify-content:center;">
+        <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#2563EB" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+    </div>
+    <h2 style="font-size:20px;font-weight:700;text-align:center;color:#0F172A;margin-bottom:8px;" data-i18n="modal-title">Configurez votre profil médical</h2>
+    <p style="font-size:14px;color:#64748B;text-align:center;line-height:1.6;margin-bottom:20px;" data-i18n="modal-text">Ces informations permettent à InsuLog de personnaliser vos recommandations de dose. Remplissez ce profil avec votre médecin.</p>
+    <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;padding:14px 16px;margin-bottom:24px;">
+      <div style="font-size:13px;color:#0369A1;">
+        <div style="display:flex;gap:8px;margin-bottom:8px;"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#0369A1" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span data-i18n="modal-tip1">La Dose Totale Journalière (TDD) se trouve sur votre ordonnance.</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#0369A1" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span data-i18n="modal-tip2">Le FSI et le RIG peuvent être calculés depuis votre TDD.</span></div>
+        <div style="display:flex;gap:8px;"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#0369A1" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg><span data-i18n="modal-tip3">Vos données sont chiffrées et ne sont jamais partagées.</span></div>
+      </div>
+    </div>
     <button onclick="fermerModal()" style="width:100%;padding:13px;background:#1E3A8A;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;" data-i18n="modal-btn">Compris, je configure mon profil</button>
-    <button onclick="fermerModal()" style="width:100%;padding:10px;background:none;border:none;color:#94A3B8;font-size:13px;cursor:pointer;font-family:inherit;margin-top:8px;" data-i18n="modal-skip">Passer pour l'instant</button>
   </div>
 </div>
 
