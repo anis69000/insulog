@@ -338,9 +338,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  async function sauvegarder(){
  const data={
    tdd:parseFloat(document.getElementById('tdd').value),
-   isf:toMmol(parseFloat(document.getElementById('isf').value)||2.6, currentUnite),
+   isf: currentUnite==='mgdl' ? parseFloat(document.getElementById('isf').value)/18.0182 : parseFloat(document.getElementById('isf').value)||2.6,
    icr:parseFloat(document.getElementById('icr').value),
-   target:toMmol(parseFloat(document.getElementById('target').value)||6.0, currentUnite),
+   target: currentUnite==='mgdl' ? parseFloat(document.getElementById('target').value)/18.0182 : parseFloat(document.getElementById('target').value)||6.0,
    age:parseInt(document.getElementById('age').value),
    poids:parseFloat(document.getElementById('poids').value),
    sexe:document.getElementById('sexe').value,

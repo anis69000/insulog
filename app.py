@@ -382,12 +382,9 @@ def calculer():
     # Récupère le profil depuis la base de données
     profil_row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get('user_id',0),), fetchone=True)
     profil = dict(profil_row) if profil_row else {}
-    unite = profil.get("unite", "mmol")
-    bg_raw   = float(d["bg"])
-    unite    = profil.get("unite", "mmol") if profil.get("unite") in ["mmol","mgdl"] else "mmol"
-    bg       = round(bg_raw / 18.0182, 1) if unite == "mgdl" else bg_raw
-    target_raw = float(profil.get("target", d.get("target", 6.0)))
-    target   = round(target_raw / 18.0182, 1) if unite == "mgdl" else target_raw
+    # bg and target are ALWAYS in mmol/L (JS sends mmol/L, profil saves mmol/L)
+    bg     = float(d["bg"])
+    target = float(profil.get("target", d.get("target", 6.0)))
     carbs    = float(d.get("carbs", 0))
     icr      = float(profil.get("icr",     d.get("icr", 12)))
     isf      = float(profil.get("isf",     d.get("isf", 2.6)))
