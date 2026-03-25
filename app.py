@@ -458,26 +458,22 @@ def profil():
     defaut = {"prenom": session.get("prenom","Patient"), "age": 28, "poids": 68,
               "sexe": "F", "tdd": 38, "isf": 2.6, "icr": 12,
               "target": 6.0, "luteal": False, "unite": "mmol"}
-    conn = get_db()
     if request.method == "POST":
         data = request.get_json()
-        existing = conn.execute("SELECT id FROM profils WHERE user_id=%s", (session.get("user_id"),)).fetchone()
+        existing = db_query("SELECT id FROM profils WHERE user_id=%s", (session.get("user_id"),), fetchone=True)
         if existing:
-            conn.execute("""UPDATE profils SET tdd=%s,isf=%s,icr=%s,target=%s,age=%s,poids=%s,sexe=%s,luteal=%s,unite=%s WHERE user_id=%s""",
+            db_query("""UPDATE profils SET tdd=%s,isf=%s,icr=%s,target=%s,age=%s,poids=%s,sexe=%s,luteal=%s,unite=%s WHERE user_id=%s""",
                 (data.get("tdd",38), data.get("isf",2.6), data.get("icr",12), data.get("target",6.0),
                  data.get("age",28), data.get("poids",68), data.get("sexe","F"),
-                 1 if data.get("luteal") else 0, data.get("unite","mmol"), session.get("user_id")))
+                 1 if data.get("luteal") else 0, data.get("unite","mmol"), session.get("user_id")), commit=True)
         else:
-            conn.execute("""INSERT INTO profils (user_id,tdd,isf,icr,target,age,poids,sexe,luteal,unite) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+            db_query("""INSERT INTO profils (user_id,tdd,isf,icr,target,age,poids,sexe,luteal,unite) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
                 (session.get("user_id"), data.get("tdd",38), data.get("isf",2.6), data.get("icr",12),
                  data.get("target",6.0), data.get("age",28), data.get("poids",68),
-                 data.get("sexe","F"), 1 if data.get("luteal") else 0, data.get("unite","mmol")))
-        conn.commit()
-        conn.close()
+                 data.get("sexe","F"), 1 if data.get("luteal") else 0, data.get("unite","mmol")), commit=True)
         session["unite"] = data.get("unite","mmol")
         return jsonify({"statut": "ok"})
-    row = conn.execute("SELECT * FROM profils WHERE user_id=%s", (session.get("user_id"),)).fetchone()
-    conn.close()
+    row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get("user_id"),), fetchone=True)
     if row:
         p = dict(row); p["luteal"] = bool(p.get("luteal",0))
         session["unite"] = p.get("unite","mmol")
