@@ -275,16 +275,21 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
         <p style="font-size:13px;color:#64748B;" data-i18n="unite-hint">Choisissez l'unité affichée dans toute l'application</p>
       </div>
     </div>
-    <div style="display:flex;gap:12px;">
-      <button type="button" id="btn-mmol" onclick="setUnite('mmol',this)"
-        style="flex:1;padding:14px;border-radius:10px;border:2px solid {% if profil.unite == 'mgdl' %}#E2E8F0{% else %}#2563EB{% endif %};background:{% if profil.unite == 'mgdl' %}#fff{% else %}#EFF6FF{% endif %};cursor:pointer;font-family:inherit;transition:all 0.15s;text-align:center;">
-        <div style="font-size:15px;font-weight:700;color:{% if profil.unite == 'mgdl' %}#64748B{% else %}#2563EB{% endif %};">mmol/L</div>
-        <div style="font-size:11px;color:#94A3B8;margin-top:3px;">Europe / Canada</div>
+    <div style="display:flex;gap:10px;">
+      <button type="button" id="btn-mmol" onclick="setUnite('mmol')"
+        style="flex:1;padding:14px;border-radius:10px;border:2px solid #E2E8F0;background:#fff;cursor:pointer;font-family:inherit;transition:all 0.15s;text-align:center;">
+        <div style="font-size:15px;font-weight:700;color:#64748B;">mmol/L</div>
+        <div style="font-size:11px;color:#94A3B8;margin-top:3px;">UK / Canada</div>
       </button>
-      <button type="button" id="btn-mgdl" onclick="setUnite('mgdl',this)"
-        style="flex:1;padding:14px;border-radius:10px;border:2px solid {% if profil.unite == 'mgdl' %}#2563EB{% else %}#E2E8F0{% endif %};background:{% if profil.unite == 'mgdl' %}#EFF6FF{% else %}#fff{% endif %};cursor:pointer;font-family:inherit;transition:all 0.15s;text-align:center;">
-        <div style="font-size:15px;font-weight:700;color:{% if profil.unite == 'mgdl' %}#2563EB{% else %}#64748B{% endif %};">mg/dL</div>
-        <div style="font-size:11px;color:#94A3B8;margin-top:3px;">France / États-Unis</div>
+      <button type="button" id="btn-gl" onclick="setUnite('gl')"
+        style="flex:1;padding:14px;border-radius:10px;border:2px solid #E2E8F0;background:#fff;cursor:pointer;font-family:inherit;transition:all 0.15s;text-align:center;">
+        <div style="font-size:15px;font-weight:700;color:#64748B;">g/L</div>
+        <div style="font-size:11px;color:#94A3B8;margin-top:3px;">France</div>
+      </button>
+      <button type="button" id="btn-mgdl" onclick="setUnite('mgdl')"
+        style="flex:1;padding:14px;border-radius:10px;border:2px solid #E2E8F0;background:#fff;cursor:pointer;font-family:inherit;transition:all 0.15s;text-align:center;">
+        <div style="font-size:15px;font-weight:700;color:#64748B;">mg/dL</div>
+        <div style="font-size:11px;color:#94A3B8;margin-top:3px;">USA</div>
       </button>
     </div>
   </div>
@@ -359,6 +364,30 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  t.setAttribute('data-i18n','save-ok');applyLang(currentLang);t.style.display='block';
  setTimeout(()=>t.style.display='none',2500);
  }
+
+  let currentUnite = "{{ profil.unite if profil.unite else 'mmol' }}";
+  const CONV_TO_MMOL   = { mmol:1, gl:5.551, mgdl:0.05551 };
+  const CONV_FROM_MMOL = { mmol:1, gl:0.18015, mgdl:18.0182 };
+  const UNIT_LABELS    = { mmol:'mmol/L', gl:'g/L', mgdl:'mg/dL' };
+  function fromMmol(v,u){ return parseFloat((v*CONV_FROM_MMOL[u]).toFixed(u==='mgdl'?0:2)); }
+  function toMmol(v,u){ return parseFloat((v*CONV_TO_MMOL[u]).toFixed(2)); }
+  function highlightBtn(u){
+    ['mmol','gl','mgdl'].forEach(function(id){
+      var b=document.getElementById('btn-'+id); if(!b) return;
+      if(id===u){ b.style.border='2px solid #2563EB'; b.style.background='#EFF6FF'; b.querySelector('div').style.color='#2563EB'; }
+      else{ b.style.border='2px solid #E2E8F0'; b.style.background='#fff'; b.querySelector('div').style.color='#64748B'; }
+    });
+  }
+  function setUnite(u){
+    var isf=document.getElementById('isf'), tgt=document.getElementById('target');
+    var RANGES={ mmol:{isf:[0.5,8,0.1],tgt:[4,9,0.5]}, gl:{isf:[0.09,1.5,0.01],tgt:[0.7,1.6,0.05]}, mgdl:{isf:[9,144,1],tgt:[72,162,1]} };
+    if(isf){ var vi=toMmol(parseFloat(isf.value)||2.6,currentUnite); isf.value=fromMmol(vi,u); isf.step=RANGES[u].isf[2]; }
+    if(tgt){ var vt=toMmol(parseFloat(tgt.value)||6.0,currentUnite); tgt.value=fromMmol(vt,u); tgt.step=RANGES[u].tgt[2]; }
+    document.querySelectorAll('.unit-isf').forEach(function(e){ e.textContent=UNIT_LABELS[u]+'/UI'; });
+    document.querySelectorAll('.unit-target').forEach(function(e){ e.textContent=UNIT_LABELS[u]; });
+    currentUnite=u; highlightBtn(u);
+  }
+  document.addEventListener('DOMContentLoaded',function(){ highlightBtn(currentUnite); if(currentUnite!=='mmol') setUnite(currentUnite); });
 
  const TRANSLATIONS = {
  fr: {
