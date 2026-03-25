@@ -363,6 +363,26 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
 </main>
 
 <script>
+
+  // ── Unités ────────────────────────────────────────────────────────────────
+  const UNITE = "{{ profil_unite|default('mmol') }}";
+  const CONV_FROM_MMOL = { mmol:1, gl:0.18015, mgdl:18.0182 };
+  const CONV_TO_MMOL   = { mmol:1, gl:5.551,   mgdl:0.05551 };
+  const UNIT_LABEL     = { mmol:'mmol/L', gl:'g/L', mgdl:'mg/dL' }[UNITE] || 'mmol/L';
+  const UNIT_STEP      = { mmol:'0.1', gl:'0.01', mgdl:'1' }[UNITE] || '0.1';
+  const UNIT_MIN       = { mmol:'2', gl:'0.4', mgdl:'36' }[UNITE] || '2';
+  const UNIT_MAX       = { mmol:'30', gl:'5.5', mgdl:'540' }[UNITE] || '30';
+  function bgToDisplay(mmol){ return parseFloat((mmol*CONV_FROM_MMOL[UNITE]).toFixed(UNITE==='mgdl'?0:2)); }
+  function displayToBg(val){ return parseFloat((val*CONV_TO_MMOL[UNITE]).toFixed(2)); }
+  document.addEventListener('DOMContentLoaded',function(){
+    var inp=document.getElementById('bg-manuel');
+    if(inp){ inp.step=UNIT_STEP; inp.min=UNIT_MIN; inp.max=UNIT_MAX; }
+    var lbl=document.getElementById('unit-label-input');
+    if(lbl) lbl.textContent=UNIT_LABEL;
+    var mg=document.getElementById('cgm-mg');
+    if(mg && UNITE!=='mmol') mg.style.display='none';
+  });
+
  let mode="cgm",hasMeal=true,sex="F",luteal=true,exInt=0;
  let cgmBg=9.4,cgmTrend=0.03;
  let dernierResultat=null,dernierPayload=null;
@@ -379,7 +399,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  const cls=bgClass(cgmBg);
  document.getElementById("cgm-val").textContent=cgmBg+" "+arrow;
  document.getElementById("cgm-label").textContent=UNIT_LABEL+" · "+bgLabel(cgmBg);
- document.getElementById("cgm-mg").textContent=mmToMg(cgmBg)+" mg/dL";
+ if(UNITE==="mmol") document.getElementById("cgm-mg").textContent=Math.round(cgmBg*18.0182)+" mg/dL";
  document.getElementById("cgm-card").className="cgm-card"+(cls?" "+cls:"");
  document.getElementById("cgm-badge").className="cgm-badge"+(cls?" "+cls:"");
  const btn=document.getElementById("btn-calc");

@@ -226,7 +226,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
         {% endif %}
         {% if not is_refus %}
           {% if e.bg4h %}
-            <div class="post-bg"><span data-i18n="post-label">Après injection (4h)</span> : {{ e.bg4h }} mmol/L</div>
+            <div class="post-bg"><span data-i18n="post-label">Après injection (4h)</span> : <span class="bg-display" data-mmol="{{ e.bg4h }}">{{ e.bg4h }} mmol/L</span></div>
           {% else %}
             <div class="bg4h-input">
               <input type="number" id="bg4h_{{ loop.index }}" placeholder="Glycémie 4h après injection" data-i18n-ph="log-ph" min="2" max="25" step="0.1">
