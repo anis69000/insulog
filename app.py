@@ -356,10 +356,20 @@ def index():
     modele_actif = model is not None
     version = metadata.get("model_version", "—")
     mae     = metadata.get("metrics_test", {}).get("mae", "—")
+    profil_row_u = db_query("SELECT unite FROM profils WHERE user_id=%s", (session.get('user_id'),), fetchone=True)
+    profil_unite = 'mmol'
+    if profil_row_u:
+        val = profil_row_u.get('unite') if hasattr(profil_row_u,'get') else profil_row_u[0] if profil_row_u else None
+        if val and val in ['mmol','gl','mgdl']:
+            profil_unite = val
+    session['unite'] = profil_unite
+    session.modified = True
     return render_template("index.html",
                            modele_actif=modele_actif,
                            version=version,
-                           mae=mae)
+                           mae=mae,
+                           profil_unite=profil_unite,
+                           is_demo=session.get('is_demo',False))
 
 
 @app.route("/calculer", methods=["POST"])
