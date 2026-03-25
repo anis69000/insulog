@@ -63,6 +63,7 @@ def init_db():
     for sql in [
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_demo INTEGER DEFAULT 0",
         "ALTER TABLE profils ADD COLUMN IF NOT EXISTS unite TEXT DEFAULT 'mmol'",
+        "UPDATE profils SET unite='mmol' WHERE unite IS NULL OR unite NOT IN ('mmol','mgdl')",
         "ALTER TABLE injections ADD COLUMN IF NOT EXISTS dose_reelle REAL",
         "ALTER TABLE injections ADD COLUMN IF NOT EXISTS bg4h REAL",
     ]:
@@ -359,9 +360,9 @@ def index():
     profil_row_u = db_query("SELECT unite FROM profils WHERE user_id=%s", (session.get('user_id'),), fetchone=True)
     profil_unite = 'mmol'
     if profil_row_u:
-        val = profil_row_u.get('unite') if hasattr(profil_row_u,'get') else profil_row_u[0] if profil_row_u else None
-        if val and val in ['mmol','gl','mgdl']:
-            profil_unite = val
+        val = profil_row_u.get('unite','mmol')
+        if val in ['mmol','mgdl']: profil_unite = val
+    session['unite'] = profil_unite
     session['unite'] = profil_unite
     session.modified = True
     return render_template("index.html",
@@ -383,7 +384,7 @@ def calculer():
     profil = dict(profil_row) if profil_row else {}
     unite = profil.get("unite", "mmol")
     bg_raw   = float(d["bg"])
-    unite    = profil.get("unite", "mmol")
+    unite    = profil.get("unite", "mmol") if profil.get("unite") in ["mmol","mgdl"] else "mmol"
     bg       = round(bg_raw / 18.0182, 1) if unite == "mgdl" else bg_raw
     target_raw = float(profil.get("target", d.get("target", 6.0)))
     target   = round(target_raw / 18.0182, 1) if unite == "mgdl" else target_raw
@@ -475,13 +476,13 @@ def profil():
             db_query("""UPDATE profils SET tdd=%s,isf=%s,icr=%s,target=%s,age=%s,poids=%s,sexe=%s,luteal=%s,unite=%s WHERE user_id=%s""",
                 (data.get("tdd",38), data.get("isf",2.6), data.get("icr",12), data.get("target",6.0),
                  data.get("age",28), data.get("poids",68), data.get("sexe","F"),
-                 1 if data.get("luteal") else 0, data.get("unite","mmol"), session.get("user_id")), commit=True)
+                 1 if data.get("luteal") else 0, data.get('unite','mmol') if data.get('unite') in ['mmol','mgdl'] else 'mmol', session.get("user_id")), commit=True)
         else:
             db_query("""INSERT INTO profils (user_id,tdd,isf,icr,target,age,poids,sexe,luteal,unite) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
                 (session.get("user_id"), data.get("tdd",38), data.get("isf",2.6), data.get("icr",12),
                  data.get("target",6.0), data.get("age",28), data.get("poids",68),
-                 data.get("sexe","F"), 1 if data.get("luteal") else 0, data.get("unite","mmol")), commit=True)
-        session["unite"] = data.get("unite","mmol")
+                 data.get("sexe","F"), 1 if data.get("luteal") else 0, data.get('unite','mmol') if data.get('unite') in ['mmol','mgdl'] else 'mmol'), commit=True)
+        session["unite"] = data.get('unite','mmol') if data.get('unite') in ['mmol','mgdl'] else 'mmol'
         return jsonify({"statut": "ok"})
     row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get("user_id"),), fetchone=True)
     if row:

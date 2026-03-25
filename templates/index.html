@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>InsuLog — Dose Calculator</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
@@ -363,24 +365,20 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
 </main>
 
 <script>
+  // ── Unités ──────────────────────────────────────────────────────────────
+  const UNITE = "{{ profil_unite if profil_unite in ['mmol','mgdl'] else 'mmol' }}";
+  const UNIT_LABEL = UNITE==='mgdl' ? 'mg/dL' : 'mmol/L';
+  function bgToDisplay(mmol){ return UNITE==='mgdl' ? Math.round(mmol*18.0182) : parseFloat(mmol.toFixed(1)); }
+  function displayToBg(val){ return UNITE==='mgdl' ? parseFloat((val/18.0182).toFixed(2)) : parseFloat(val); }
 
-  // ── Unités ────────────────────────────────────────────────────────────────
-  const UNITE = "{{ profil_unite|default('mmol') }}";
-  const CONV_FROM_MMOL = { mmol:1, gl:0.18015, mgdl:18.0182 };
-  const CONV_TO_MMOL   = { mmol:1, gl:5.551,   mgdl:0.05551 };
-  const UNIT_LABEL     = { mmol:'mmol/L', gl:'g/L', mgdl:'mg/dL' }[UNITE] || 'mmol/L';
-  const UNIT_STEP      = { mmol:'0.1', gl:'0.01', mgdl:'1' }[UNITE] || '0.1';
-  const UNIT_MIN       = { mmol:'2', gl:'0.4', mgdl:'36' }[UNITE] || '2';
-  const UNIT_MAX       = { mmol:'30', gl:'5.5', mgdl:'540' }[UNITE] || '30';
-  function bgToDisplay(mmol){ return parseFloat((mmol*CONV_FROM_MMOL[UNITE]).toFixed(UNITE==='mgdl'?0:2)); }
-  function displayToBg(val){ return parseFloat((val*CONV_TO_MMOL[UNITE]).toFixed(2)); }
+
   document.addEventListener('DOMContentLoaded',function(){
     var inp=document.getElementById('bg-manuel');
-    if(inp){ inp.step=UNIT_STEP; inp.min=UNIT_MIN; inp.max=UNIT_MAX; }
+    if(inp){ inp.step=UNITE==='mgdl'?'1':'0.1'; inp.min=UNITE==='mgdl'?'36':'2'; inp.max=UNITE==='mgdl'?'540':'30'; }
     var lbl=document.getElementById('unit-label-input');
     if(lbl) lbl.textContent=UNIT_LABEL;
     var mg=document.getElementById('cgm-mg');
-    if(mg && UNITE!=='mmol') mg.style.display='none';
+    if(mg) mg.style.display=UNITE==='mgdl'?'none':'block';
   });
 
  let mode="cgm",hasMeal=true,sex="F",luteal=true,exInt=0;
@@ -397,7 +395,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  cgmBg=+Math.max(3.5,Math.min(20,cgmBg+noise+mr)).toFixed(1);
  const arrow=cgmTrend>0.06?"↑↑":cgmTrend>0.02?"↑":cgmTrend<-0.06?"↓↓":cgmTrend<-0.02?"↓":"→";
  const cls=bgClass(cgmBg);
- document.getElementById("cgm-val").textContent=bgToDisplay(cgmBg).toFixed(UNITE==="mgdl"?0:UNITE==="gl"?2:1)+" "+arrow;
+ document.getElementById("cgm-val").textContent=bgToDisplay(cgmBg)+" "+arrow;
  document.getElementById("cgm-label").textContent=UNIT_LABEL+" · "+bgLabel(cgmBg);
  if(UNITE==="mmol") document.getElementById("cgm-mg").textContent=Math.round(cgmBg*18.0182)+" mg/dL";
  document.getElementById("cgm-card").className="cgm-card"+(cls?" "+cls:"");
