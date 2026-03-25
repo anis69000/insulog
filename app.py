@@ -433,6 +433,7 @@ def dashboard():
     rows = db_query("SELECT * FROM injections WHERE user_id=%s ORDER BY ts DESC LIMIT 50",
                     (session.get('user_id'),), fetchall=True) or []
     profil_row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get('user_id'),), fetchone=True)
+    if profil_row: session['unite'] = dict(profil_row).get('unite','mmol')
     hist = [dict(r) for r in rows]
     profil = dict(profil_row) if profil_row else {"prenom": session.get("prenom","Patient")}
 
@@ -454,32 +455,46 @@ def dashboard():
 @app.route("/profil", methods=["GET", "POST"])
 @login_required
 def profil():
-    """Page configuration du profil patient."""
-    # Profil par défaut
-    defaut = {
-        "prenom": "Patient", "age": 28, "poids": 68, "taille": 170,
-        "sexe": "F", "tdd": 38, "isf": 2.6, "icr": 12,
-        "target": 6.0, "luteal": False, "type_insuline": "humalog"
-    }
+    defaut = {"prenom": session.get("prenom","Patient"), "age": 28, "poids": 68,
+              "sexe": "F", "tdd": 38, "isf": 2.6, "icr": 12,
+              "target": 6.0, "luteal": False, "unite": "mmol"}
+    conn = get_db()
     if request.method == "POST":
         data = request.get_json()
-        session["profil"] = data
-        return jsonify({"statut": "ok", "profil": data})
-
-    profil_actuel = session.get("profil", defaut)
-    return render_template("profil.html", profil=profil_actuel)
-
+        existing = conn.execute("SELECT id FROM profils WHERE user_id=%s", (session.get("user_id"),)).fetchone()
+        if existing:
+            conn.execute("""UPDATE profils SET tdd=%s,isf=%s,icr=%s,target=%s,age=%s,poids=%s,sexe=%s,luteal=%s,unite=%s WHERE user_id=%s""",
+                (data.get("tdd",38), data.get("isf",2.6), data.get("icr",12), data.get("target",6.0),
+                 data.get("age",28), data.get("poids",68), data.get("sexe","F"),
+                 1 if data.get("luteal") else 0, data.get("unite","mmol"), session.get("user_id")))
+        else:
+            conn.execute("""INSERT INTO profils (user_id,tdd,isf,icr,target,age,poids,sexe,luteal,unite) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                (session.get("user_id"), data.get("tdd",38), data.get("isf",2.6), data.get("icr",12),
+                 data.get("target",6.0), data.get("age",28), data.get("poids",68),
+                 data.get("sexe","F"), 1 if data.get("luteal") else 0, data.get("unite","mmol")))
+        conn.commit()
+        conn.close()
+        session["unite"] = data.get("unite","mmol")
+        return jsonify({"statut": "ok"})
+    row = conn.execute("SELECT * FROM profils WHERE user_id=%s", (session.get("user_id"),)).fetchone()
+    conn.close()
+    if row:
+        p = dict(row); p["luteal"] = bool(p.get("luteal",0))
+        session["unite"] = p.get("unite","mmol")
+        return render_template("profil.html", profil=p, unite=p.get("unite","mmol"))
+    return render_template("profil.html", profil=defaut, unite="mmol")
 
 @app.route("/profil/data")
 @login_required
 def profil_data():
-    """Retourne le profil actuel en JSON."""
-    defaut = {
-        "prenom": "Patient", "age": 28, "poids": 68, "taille": 170,
-        "sexe": "F", "tdd": 38, "isf": 2.6, "icr": 12,
-        "target": 6.0, "luteal": False, "type_insuline": "humalog"
-    }
-    return jsonify(session.get("profil", defaut))
+    defaut = {"prenom": session.get("prenom","Patient"), "age": 28, "poids": 68,
+              "sexe": "F", "tdd": 38, "isf": 2.6, "icr": 12,
+              "target": 6.0, "luteal": False, "unite": "mmol"}
+    row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get("user_id"),), fetchone=True)
+    if row:
+        p = dict(row); p["luteal"] = bool(p.get("luteal",0))
+        return jsonify(p)
+    return jsonify(defaut)
 
 
 @app.route("/injection/sauvegarder", methods=["POST"])
@@ -523,6 +538,7 @@ def historique():
     rows = db_query("SELECT * FROM injections WHERE user_id=%s ORDER BY ts DESC LIMIT 50",
                     (session.get('user_id'),), fetchall=True) or []
     profil_row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get('user_id'),), fetchone=True)
+    if profil_row: session['unite'] = dict(profil_row).get('unite','mmol')
     hist = [dict(r) for r in rows]
     return render_template("historique.html", historique=hist, unite=session.get("unite","mmol"))
 
