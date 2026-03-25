@@ -39,7 +39,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  .cycle-hint{font-size:12px;color:#DB2777;font-weight:500;margin-top:8px;font-size:13px;}
  .btn-save{width:100%;padding:13px;background:#1E3A8A;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.15s;margin-top:8px;}
  .btn-save:hover{background:#1e40af;}
- .toast{display:none;position:fixed;bottom:24px;right:24px;background:#059669;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,.15);}
+ .toast{display:none;position:fixed;bottom:24px;right:24px;background:#059669;color:#fff;padding:14px 24px;border-radius:10px;font-size:14px;font-weight:600;z-index:2000;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:opacity 0.3s;}
 
  .lang-toggle{display:flex;align-items:center;gap:6px;margin-top:10px;}
  .lang-btn{flex:1;padding:5px;border-radius:6px;border:1px solid #E2E8F0;background:#fff;color:#64748B;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;}
@@ -295,7 +295,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
   </div>
 
 <button class="btn-save" onclick="sauvegarder()" data-i18n="save-btn">Enregistrer le profil</button>
- <div class="toast" id="toast" data-i18n="save-ok">Profil enregistré avec succès</div>
+ <div class="toast" id="toast">✓ Profil enregistré avec succès</div>
 
 <!-- Popup premier accès -->
 <div id="modal-overlay" style="position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
@@ -350,19 +350,23 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  async function sauvegarder(){
  const data={
    tdd:parseFloat(document.getElementById('tdd').value),
-   isf:displayToMmol(parseFloat(document.getElementById('isf').value)),
+   isf:toMmol(parseFloat(document.getElementById('isf').value)||2.6, currentUnite),
    icr:parseFloat(document.getElementById('icr').value),
-   target:displayToMmol(parseFloat(document.getElementById('target').value)),
+   target:toMmol(parseFloat(document.getElementById('target').value)||6.0, currentUnite),
    age:parseInt(document.getElementById('age').value),
    poids:parseFloat(document.getElementById('poids').value),
    sexe:document.getElementById('sexe').value,
    luteal:document.getElementById('cycle').value==='true',
    unite:currentUnite,
  };
- await fetch('/profil',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
- const t=document.getElementById('toast');
- t.setAttribute('data-i18n','save-ok');applyLang(currentLang);t.style.display='block';
- setTimeout(()=>t.style.display='none',2500);
+ const resp = await fetch('/profil',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+ const result = await resp.json();
+ if(result.statut === 'ok'){
+   const t = document.getElementById('toast');
+   t.style.display='block';
+   t.style.opacity='1';
+   setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.style.display='none',300); }, 2500);
+ }
  }
 
   let currentUnite = "{{ profil.unite if profil.unite else 'mmol' }}";
