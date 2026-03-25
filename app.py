@@ -49,7 +49,7 @@ def init_db():
         user_id INTEGER UNIQUE NOT NULL,
         tdd REAL DEFAULT 38, isf REAL DEFAULT 2.6, icr REAL DEFAULT 12,
         target REAL DEFAULT 6.0, age INTEGER DEFAULT 28, poids REAL DEFAULT 68,
-        sexe TEXT DEFAULT 'F', luteal INTEGER DEFAULT 0, unite TEXT DEFAULT 'mmol')""")
+        sexe TEXT DEFAULT 'F', luteal INTEGER DEFAULT 0, unite TEXT DEFAULT 'mgdl')""")
     c.execute("""CREATE TABLE IF NOT EXISTS injections (
         id TEXT PRIMARY KEY, user_id INTEGER NOT NULL,
         heure TEXT, date TEXT, ts TEXT,
@@ -62,8 +62,8 @@ def init_db():
     # Migrations séparées (PostgreSQL)
     for sql in [
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_demo INTEGER DEFAULT 0",
-        "ALTER TABLE profils ADD COLUMN IF NOT EXISTS unite TEXT DEFAULT 'mmol'",
-        "UPDATE profils SET unite='mmol' WHERE unite IS NULL OR unite NOT IN ('mmol','mgdl')",
+        "ALTER TABLE profils ADD COLUMN IF NOT EXISTS unite TEXT DEFAULT 'mgdl'",
+        "UPDATE profils SET unite='mgdl' WHERE unite IS NULL OR unite NOT IN ('mmol','mgdl')",
         "ALTER TABLE injections ADD COLUMN IF NOT EXISTS dose_reelle REAL",
         "ALTER TABLE injections ADD COLUMN IF NOT EXISTS bg4h REAL",
     ]:
@@ -360,7 +360,7 @@ def index():
     profil_row_u = db_query("SELECT unite FROM profils WHERE user_id=%s", (session.get('user_id'),), fetchone=True)
     profil_unite = 'mmol'
     if profil_row_u:
-        val = profil_row_u.get('unite','mmol')
+        val = profil_row_u.get('unite','mgdl')
         if val in ['mmol','mgdl']: profil_unite = val
     session['unite'] = profil_unite
     session['unite'] = profil_unite
@@ -444,7 +444,7 @@ def dashboard():
     rows = db_query("SELECT * FROM injections WHERE user_id=%s ORDER BY ts DESC LIMIT 50",
                     (session.get('user_id'),), fetchall=True) or []
     profil_row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get('user_id'),), fetchone=True)
-    if profil_row: session['unite'] = dict(profil_row).get('unite','mmol')
+    if profil_row: session['unite'] = dict(profil_row).get('unite','mgdl')
     hist = [dict(r) for r in rows]
     profil = dict(profil_row) if profil_row else {"prenom": session.get("prenom","Patient")}
 
@@ -460,7 +460,7 @@ def dashboard():
     stats = {"avg_bg": avg_bg, "total_ui": total_ui, "tir_pct": tir_pct, "nb_injections": nb_injections}
     doses_chart = [{"label": h["heure"], "dose": h["dose"], "bg": h["bg"]} for h in reversed(hist[:7])]
     return render_template("dashboard.html", stats=stats, historique=hist,
-                           doses_chart=json.dumps(doses_chart), profil=profil, unite=session.get("unite","mmol"))
+                           doses_chart=json.dumps(doses_chart), profil=profil, unite=session.get("unite","mgdl"))
 
 
 @app.route("/profil", methods=["GET", "POST"])
@@ -476,19 +476,19 @@ def profil():
             db_query("""UPDATE profils SET tdd=%s,isf=%s,icr=%s,target=%s,age=%s,poids=%s,sexe=%s,luteal=%s,unite=%s WHERE user_id=%s""",
                 (data.get("tdd",38), data.get("isf",2.6), data.get("icr",12), data.get("target",6.0),
                  data.get("age",28), data.get("poids",68), data.get("sexe","F"),
-                 1 if data.get("luteal") else 0, data.get('unite','mmol') if data.get('unite') in ['mmol','mgdl'] else 'mmol', session.get("user_id")), commit=True)
+                 1 if data.get("luteal") else 0, data.get('unite','mgdl') if data.get('unite') in ['mmol','mgdl'] else 'mmol', session.get("user_id")), commit=True)
         else:
             db_query("""INSERT INTO profils (user_id,tdd,isf,icr,target,age,poids,sexe,luteal,unite) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
                 (session.get("user_id"), data.get("tdd",38), data.get("isf",2.6), data.get("icr",12),
                  data.get("target",6.0), data.get("age",28), data.get("poids",68),
-                 data.get("sexe","F"), 1 if data.get("luteal") else 0, data.get('unite','mmol') if data.get('unite') in ['mmol','mgdl'] else 'mmol'), commit=True)
-        session["unite"] = data.get('unite','mmol') if data.get('unite') in ['mmol','mgdl'] else 'mmol'
+                 data.get("sexe","F"), 1 if data.get("luteal") else 0, data.get('unite','mgdl') if data.get('unite') in ['mmol','mgdl'] else 'mmol'), commit=True)
+        session["unite"] = data.get('unite','mgdl') if data.get('unite') in ['mmol','mgdl'] else 'mmol'
         return jsonify({"statut": "ok"})
     row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get("user_id"),), fetchone=True)
     if row:
         p = dict(row); p["luteal"] = bool(p.get("luteal",0))
-        session["unite"] = p.get("unite","mmol")
-        return render_template("profil.html", profil=p, unite=p.get("unite","mmol"))
+        session["unite"] = p.get("unite","mgdl")
+        return render_template("profil.html", profil=p, unite=p.get("unite","mgdl"))
     return render_template("profil.html", profil=defaut, unite="mmol")
 
 @app.route("/profil/data")
@@ -545,9 +545,9 @@ def historique():
     rows = db_query("SELECT * FROM injections WHERE user_id=%s ORDER BY ts DESC LIMIT 50",
                     (session.get('user_id'),), fetchall=True) or []
     profil_row = db_query("SELECT * FROM profils WHERE user_id=%s", (session.get('user_id'),), fetchone=True)
-    if profil_row: session['unite'] = dict(profil_row).get('unite','mmol')
+    if profil_row: session['unite'] = dict(profil_row).get('unite','mgdl')
     hist = [dict(r) for r in rows]
-    return render_template("historique.html", historique=hist, unite=session.get("unite","mmol"))
+    return render_template("historique.html", historique=hist, unite=session.get("unite","mgdl"))
 
 
 
