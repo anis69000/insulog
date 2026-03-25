@@ -188,7 +188,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
 
  <div class="kpi-grid">
  <div class="kpi-card">
- <div><div class="kpi-label" data-i18n="kpi-avg-bg">Glycémie moyenne</div><div class="kpi-value" style="color:#059669;"><span id="kpi-avg-bg" data-mmol="{{ stats.avg_bg }}">{{ stats.avg_bg }}</span> <span class="kpi-unit" id="kpi-unit-bg">mmol/L</span></div></div>
+ <div><div class="kpi-label" data-i18n="kpi-avg-bg">Glycémie moyenne</div><div class="kpi-value" style="color:#059669;"><span id="kpi-avg-bg" data-mmol="{{ stats.avg_bg }}">{{ stats.avg_bg }}</span> <span class="kpi-unit" id="kpi-unit-bg">{{ unite|default("mgdl")|upper }}</span></div></div>
  <div class="kpi-icon" style="background:#ECFDF5;"><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
  </div>
  <div class="kpi-card">

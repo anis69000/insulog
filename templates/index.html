@@ -380,7 +380,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
     var mg=document.getElementById('cgm-mg');
     if(mg) mg.style.display=UNITE==='mmol'?'block':'none';
     // Trigger first CGM update with correct unit
-    setTimeout(updateCGM, 100);
+    if(typeof updateCGM === "function") updateCGM();
   });
 
  let mode="cgm",hasMeal=true,sex="F",luteal=true,exInt=0;
