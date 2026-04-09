@@ -249,9 +249,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  <button class="toggle-btn" onclick="setMode('manuel',this)" data-i18n="manual-entry">Saisie manuelle</button>
  </div>
  <div id="cgm-panel"><p style="font-size:13px;color:#94A3B8;" data-i18n="cgm-live">Lecture CGM en direct ci-dessus.</p>
-        <button onclick="ouvrirModalCGM()" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;color:#2563EB;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:10px;">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-          <span data-i18n="connect-device">Connecter un appareil CGM</span>
+        <button onclick="ouvrirModalCGM()" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:linear-gradient(135deg,#2563EB,#7C3AED);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:12px;box-shadow:0 4px 14px rgba(37,99,235,0.35);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(37,99,235,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(37,99,235,0.35)'">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span data-i18n="connect-device">Connecter une montre connectée</span>
         </button></div>
  <div id="manuel-panel" style="display:none;">
  <div class="field"><label>Glycémie (<span id="unit-label-input">mg/dL</span>)</label><input type="number" id="bg-manuel" value="" min="2" max="30" step="0.1"></div>
@@ -495,7 +495,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  "decline-ok-title":"Refus enregistré","decline-ok-sub":"Votre décision a été sauvegardée.",
  "hypo-warn":"Hypoglycémie — Pas d'injection. Prenez 15g de glucides rapides.",
  "hypo-btn":"Hypoglycémie — Pas d'injection","bg-hypo":"Hypoglycémie","bg-ok":"Dans la cible","bg-high":"Élevée","bg-very-high":"Haute",
- "logout":"Déconnexion","connect-device":"Connecter un appareil CGM","cgm-modal-title":"Connecter un appareil CGM","cgm-modal-sub":"Sélectionnez votre appareil de mesure","cgm-compatible":"Appareils compatibles","cgm-soon":"Bientôt","cgm-note":"Les intégrations CGM seront disponibles dans une prochaine mise à jour.","cgm-close":"Fermer","nav-dose":"Calculateur de dose","nav-dashboard":"Tableau de bord",
+ "logout":"Déconnexion","connect-device":"Connecter une montre connectée","cgm-modal-title":"Connecter une montre connectée","cgm-modal-sub":"Pour enrichir le modèle avec vos données personnelles","cgm-why-title":"Pourquoi connecter votre montre ?","cgm-data-hr":"Fréquence cardiaque","cgm-data-activity":"Activité physique","cgm-data-sleep":"Qualité du sommeil","cgm-data-sedentary":"Niveau de sédentarité","cgm-data-stress":"Niveau de stress (VFC)","cgm-data-calories":"Dépense calorique","cgm-compatible":"Appareils compatibles","cgm-soon":"Bientôt","cgm-note":"Les intégrations CGM seront disponibles dans une prochaine mise à jour.","cgm-close":"Fermer","nav-dose":"Calculateur de dose","nav-dashboard":"Tableau de bord",
  "nav-history":"Historique injections","nav-profile":"Profil patient",
  "model-status":"Statut modèle","app-sub":"Gestion diabète de type 1",
  },
@@ -524,7 +524,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
  "decline-ok-title":"Decline Recorded","decline-ok-sub":"Your decision has been saved.",
  "hypo-warn":"Hypoglycemia — No injection. Take 15g fast carbs.",
  "hypo-btn":"Hypoglycemia — No Injection","bg-hypo":"Hypoglycemia","bg-ok":"In Range","bg-high":"Elevated","bg-very-high":"High",
- "logout":"Sign Out","connect-device":"Connect CGM Device","cgm-modal-title":"Connect a CGM Device","cgm-modal-sub":"Select your monitoring device","cgm-compatible":"Compatible Devices","cgm-soon":"Soon","cgm-note":"CGM integrations coming in a future update. Use Simulated CGM or Manual Entry for now.","cgm-close":"Close","nav-dose":"Dose Calculator","nav-dashboard":"Dashboard",
+ "logout":"Sign Out","connect-device":"Connect a Smart Watch","cgm-modal-title":"Connect a Smart Watch","cgm-modal-sub":"To enrich the model with your personal data","cgm-why-title":"Why connect your watch?","cgm-data-hr":"Heart rate","cgm-data-activity":"Physical activity","cgm-data-sleep":"Sleep quality","cgm-data-sedentary":"Sedentary level","cgm-data-stress":"Stress level (HRV)","cgm-data-calories":"Calorie expenditure","cgm-compatible":"Compatible Devices","cgm-soon":"Soon","cgm-note":"CGM integrations coming in a future update. Use Simulated CGM or Manual Entry for now.","cgm-close":"Close","nav-dose":"Dose Calculator","nav-dashboard":"Dashboard",
  "nav-history":"Injection History","nav-profile":"Patient Profile",
  "model-status":"Model Status","app-sub":"Type 1 Diabetes Management",
  }
@@ -637,23 +637,59 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
   </a>
 </nav>
 
+
 <div id="modal-cgm" style="position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);">
-  <div style="background:#fff;border-radius:16px;padding:32px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+  <div style="background:#fff;border-radius:16px;padding:32px;max-width:540px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;">
+    
+    <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div style="display:flex;align-items:center;gap:10px;">
         <div style="width:42px;height:42px;background:#EFF6FF;border-radius:10px;display:flex;align-items:center;justify-content:center;">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2563EB" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2563EB" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <div>
-          <h2 style="font-size:17px;font-weight:700;color:#0F172A;" data-i18n="cgm-modal-title">Connecter un appareil CGM</h2>
-          <p style="font-size:12px;color:#64748B;" data-i18n="cgm-modal-sub">Sélectionnez votre appareil de mesure</p>
+          <h2 style="font-size:17px;font-weight:700;color:#0F172A;" data-i18n="cgm-modal-title">Connecter une montre connectée</h2>
+          <p style="font-size:12px;color:#64748B;" data-i18n="cgm-modal-sub">Pour enrichir le modèle avec vos données personnelles</p>
         </div>
       </div>
       <button onclick="fermerModalCGM()" style="width:30px;height:30px;background:#F1F5F9;border:none;border-radius:6px;cursor:pointer;font-size:16px;color:#64748B;">✕</button>
     </div>
 
+    <!-- Pourquoi -->
+    <div style="background:#F0FDF4;border:1px solid #A7F3D0;border-radius:10px;padding:14px 16px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;color:#065F46;margin-bottom:8px;" data-i18n="cgm-why-title">Pourquoi connecter votre montre ?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#047857;">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          <span data-i18n="cgm-data-hr">Fréquence cardiaque</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#047857;">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span data-i18n="cgm-data-activity">Activité physique</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#047857;">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          <span data-i18n="cgm-data-sleep">Qualité du sommeil</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#047857;">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <span data-i18n="cgm-data-sedentary">Niveau de sédentarité</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#047857;">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span data-i18n="cgm-data-stress">Niveau de stress (VFC)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#047857;">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#059669" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+          <span data-i18n="cgm-data-calories">Dépense calorique</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appareils compatibles -->
     <div style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;" data-i18n="cgm-compatible">Appareils compatibles</div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid #E2E8F0;border-radius:10px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="width:36px;height:36px;background:#000;border-radius:8px;display:flex;align-items:center;justify-content:center;">
@@ -663,24 +699,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
         </div>
         <span style="font-size:11px;font-weight:600;color:#F59E0B;background:#FFFBEB;border:1px solid #FDE68A;padding:3px 8px;border-radius:99px;" data-i18n="cgm-soon">Bientôt</span>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid #E2E8F0;border-radius:10px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:36px;height:36px;background:#2563EB;border-radius:8px;display:flex;align-items:center;justify-content:center;">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-          </div>
-          <div><div style="font-size:13px;font-weight:700;">Dexcom G7</div><div style="font-size:11px;color:#94A3B8;">CGM continu</div></div>
-        </div>
-        <span style="font-size:11px;font-weight:600;color:#F59E0B;background:#FFFBEB;border:1px solid #FDE68A;padding:3px 8px;border-radius:99px;" data-i18n="cgm-soon">Bientôt</span>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid #E2E8F0;border-radius:10px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:36px;height:36px;background:#DC2626;border-radius:8px;display:flex;align-items:center;justify-content:center;">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 3"/></svg>
-          </div>
-          <div><div style="font-size:13px;font-weight:700;">FreeStyle Libre 3</div><div style="font-size:11px;color:#94A3B8;">Abbott</div></div>
-        </div>
-        <span style="font-size:11px;font-weight:600;color:#F59E0B;background:#FFFBEB;border:1px solid #FDE68A;padding:3px 8px;border-radius:99px;" data-i18n="cgm-soon">Bientôt</span>
-      </div>
+
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid #E2E8F0;border-radius:10px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="width:36px;height:36px;background:#059669;border-radius:8px;display:flex;align-items:center;justify-content:center;">
@@ -690,13 +709,34 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#F1F5F9;color:#0F172A
         </div>
         <span style="font-size:11px;font-weight:600;color:#F59E0B;background:#FFFBEB;border:1px solid #FDE68A;padding:3px 8px;border-radius:99px;" data-i18n="cgm-soon">Bientôt</span>
       </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid #E2E8F0;border-radius:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;background:#6366F1;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M8 12h8M12 8v8"/></svg>
+          </div>
+          <div><div style="font-size:13px;font-weight:700;">Fitbit / Google Pixel Watch</div><div style="font-size:11px;color:#94A3B8;">Sense · Versa · Pixel Watch</div></div>
+        </div>
+        <span style="font-size:11px;font-weight:600;color:#F59E0B;background:#FFFBEB;border:1px solid #FDE68A;padding:3px 8px;border-radius:99px;" data-i18n="cgm-soon">Bientôt</span>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid #E2E8F0;border-radius:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;background:#0EA5E9;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+          </div>
+          <div><div style="font-size:13px;font-weight:700;">Samsung Galaxy Watch</div><div style="font-size:11px;color:#94A3B8;">Watch 5 · Watch 6 · Ultra</div></div>
+        </div>
+        <span style="font-size:11px;font-weight:600;color:#F59E0B;background:#FFFBEB;border:1px solid #FDE68A;padding:3px 8px;border-radius:99px;" data-i18n="cgm-soon">Bientôt</span>
+      </div>
+
     </div>
 
-    <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#0369A1;" data-i18n="cgm-note">
-      Les intégrations CGM seront disponibles dans une prochaine mise à jour. Utilisez le CGM Simulé ou la Saisie manuelle en attendant.
+    <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#0369A1;line-height:1.5;" data-i18n="cgm-note">
+      L'intégration des montres connectées permettra à InsuLog d'ajuster automatiquement les recommandations selon votre niveau d'activité, de stress et de sommeil en temps réel.
     </div>
     <button onclick="fermerModalCGM()" style="width:100%;padding:12px;background:#1E3A8A;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;" data-i18n="cgm-close">Fermer</button>
   </div>
-</div>
+</div></div>
 </body>
 </html>
