@@ -14,6 +14,8 @@ import math
 import os
 import random
 from datetime import datetime, timedelta
+import pytz
+MONTREAL_TZ = pytz.timezone("America/Montreal")
 
 JOURS_FR = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"]
 MOIS_FR  = ["","Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"]
@@ -246,8 +248,8 @@ def predire_ml(data):
             'factor_meal_type':         meal_f,
             'hour':                     hour,
             'time_enc':                 time_enc,
-            'day_of_week':              datetime.now().weekday(),
-            'month':                    datetime.now().month,
+            'day_of_week':              datetime.now(MONTREAL_TZ).weekday(),
+            'month':                    datetime.now(MONTREAL_TZ).month,
         }
 
         X = pd.DataFrame([row])[FEATURES]
@@ -275,7 +277,7 @@ def predire_ml(data):
 def generer_historique_demo():
     historique = []
     for i in range(12):
-        ts = datetime.now() - timedelta(hours=i*5)
+        ts = datetime.now(MONTREAL_TZ) - timedelta(hours=i*5)
         bg = round(6 + random.random() * 9, 1)
         historique.append({
             "id":     f"demo_{i}",
@@ -392,7 +394,7 @@ def calculer():
     ex_int   = int(d.get("ex_intensity", 0))
     ex_hours = float(d.get("ex_hours", 0))
     meal     = d.get("meal_type", "standard")
-    hour     = int(d.get("hour", datetime.now().hour))
+    hour     = int(d.get("hour", datetime.now(MONTREAL_TZ).hour))
     sex      = profil.get("sexe",    d.get("sex", "F"))
     luteal   = bool(profil.get("luteal", d.get("luteal", False)))
     tdd      = float(profil.get("tdd",   d.get("tdd", 38)))
@@ -505,7 +507,7 @@ def profil_data():
 @login_required
 def sauvegarder_injection():
     d = request.get_json()
-    now = datetime.now()
+    now = datetime.now(MONTREAL_TZ)
     inj_id = f"inj_{now.strftime('%Y%m%d%H%M%S')}_{session.get('user_id',0)}"
     db_query("""INSERT INTO injections
         (id,user_id,heure,date,ts,dose,bg,carbs,iob,source,statut,commentaire)
