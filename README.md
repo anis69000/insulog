@@ -58,18 +58,17 @@ insulog_flask/
 
 Le modèle XGBoost a été entraîné séparément (Google Colab).  
 
-Dossier complet :  
-/model_training  
+Voir le dossier : /model_training  
 
-Contenu :  
-- données d’entraînement  
-- notebooks et scripts  
-- documents explicatifs (PDF)  
+Ce dossier contient :  
+- les données d’entraînement  
+- les notebooks et scripts  
+- les documents explicatifs (PDF)  
 
-Ce dossier permet de comprendre :  
-- la construction des données  
-- l’entraînement du modèle  
-- la logique des prédictions  
+Il permet de comprendre :  
+- comment les données ont été construites  
+- comment le modèle a été entraîné  
+- comment les prédictions sont générées  
 
 ---
 
